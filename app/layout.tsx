@@ -13,7 +13,7 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "DARK COFFEE - Management System",
   description: "Coffee shop management system for DARK COFFEE",
-    generator: 'v0.app'
+    generator: 'E8.app'
 }
 
 export default function RootLayout({

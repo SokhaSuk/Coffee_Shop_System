@@ -144,10 +144,10 @@ export function LoginForm() {
             <h3 className="text-sm font-medium text-coffee-900 mb-2">Demo Accounts:</h3>
             <div className="space-y-2 text-xs text-coffee-700">
               <div>
-                <strong>Admin:</strong> admin@darkcoffee.com / admin123
+                <strong>Admin:</strong> admin@darkcoffee.com / password123
               </div>
               <div>
-                <strong>Cashier:</strong> cashier@darkcoffee.com / cashier123
+                <strong>Cashier:</strong> cashier@darkcoffee.com / password123
               </div>
             </div>
           </div>

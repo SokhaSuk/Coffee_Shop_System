@@ -1,12 +1,14 @@
 {
-  "name": "my-v0-project",
+  "name": "coffee-management-system",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "node ./scripts/run-dev.js",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "dev:lan": "node ./scripts/run-dev.js -p 3001",
+    "start:lan": "node ./scripts/print-host.js -- -p 3001 && next start -H 0.0.0.0 -p 3001"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
