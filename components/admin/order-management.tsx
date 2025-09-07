@@ -201,7 +201,7 @@ export function OrderManagement() {
             {filteredOrders.map((order) => {
               const StatusIcon = getStatusIcon(order.status)
               return (
-                <Card key={order.id} className="hover:shadow-md transition-shadow">
+                <Card key={order.id} className="transition-all hover:shadow-lg hover:-translate-y-0.5 border border-coffee-200">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
@@ -340,7 +340,7 @@ export function OrderManagement() {
             {orders
               .filter((order) => order.status === "completed")
               .map((order) => (
-                <Card key={order.id}>
+                <Card key={order.id} className="border border-coffee-200">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>

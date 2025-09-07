@@ -67,7 +67,7 @@ export function OrderHistory() {
 
       <div className="grid gap-4">
         {filteredOrders.map((order) => (
-          <Card key={order.id} className="hover:shadow-md transition-shadow">
+          <Card key={order.id} className="transition-all hover:shadow-lg hover:-translate-y-0.5 border border-coffee-200">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -112,7 +112,21 @@ export function OrderHistory() {
                     <Eye className="h-4 w-4 mr-2" />
                     View
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const details = order.items
+                        .map((i) => `${i.quantity}x ${i.name} - $${(i.quantity * i.price).toFixed(2)}`)
+                        .join("\n")
+                      const receipt = `Receipt for ${order.id}\n${details}\nTotal: $${order.total.toFixed(2)}`
+                      try {
+                        navigator.clipboard.writeText(receipt)
+                      } catch {}
+                      alert(`Receipt copied to clipboard for ${order.id}`)
+                    }}
+                    aria-label={`Copy receipt for ${order.id}`}
+                  >
                     <Receipt className="h-4 w-4 mr-2" />
                     Receipt
                   </Button>

@@ -28,7 +28,14 @@
   --chart-3: oklch(0.65 0.05 50); /* Medium brown for charts */
   --chart-4: oklch(0.45 0.03 45); /* Darker brown for charts */
   --chart-5: oklch(0.95 0.01 50); /* Light background for charts */
-  --radius: 0.5rem;
+  --radius: 0.75rem;
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --gradient-primary: linear-gradient(135deg, oklch(0.29 0.04 45), oklch(0.35 0.04 45));
+  --gradient-card: linear-gradient(135deg, rgba(255,255,255,1), rgba(254,252,248,0.8));
   --sidebar: oklch(0.29 0.04 45); /* Coffee brown sidebar */
   --sidebar-foreground: oklch(0.98 0.01 60); /* Light sidebar text */
   --sidebar-primary: oklch(0.82 0.06 55); /* Warm beige sidebar primary */
@@ -37,6 +44,10 @@
   --sidebar-accent-foreground: oklch(0.98 0.01 60); /* Light text on sidebar accent */
   --sidebar-border: oklch(0.35 0.04 45); /* Sidebar borders */
   --sidebar-ring: oklch(0.82 0.06 55); /* Warm beige sidebar focus */
+  /* Enhanced styling variables */
+  --surface-elevation-1: var(--shadow-sm);
+  --surface-elevation-2: var(--shadow-md);
+  --surface-elevation-3: var(--shadow-lg);
 }
 
 .dark {
@@ -72,6 +83,17 @@
   --sidebar-accent-foreground: oklch(0.95 0.01 50); /* Light text on sidebar accent */
   --sidebar-border: oklch(0.25 0.03 45); /* Dark sidebar borders */
   --sidebar-ring: oklch(0.82 0.06 55); /* Warm beige sidebar focus */
+  /* Dark mode shadows and gradients */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --gradient-primary: linear-gradient(135deg, oklch(0.82 0.06 55), oklch(0.75 0.06 55));
+  --gradient-card: linear-gradient(135deg, oklch(0.15 0.02 40), oklch(0.18 0.02 40));
+  --surface-elevation-1: var(--shadow-sm);
+  --surface-elevation-2: var(--shadow-md);
+  --surface-elevation-3: var(--shadow-lg);
 }
 
 @theme inline {
@@ -121,5 +143,78 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(circle at 1px 1px, rgba(135, 67, 35, 0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+    min-height: 100vh;
+  }
+  
+  /* Enhanced scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.65 0.05 50);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.55 0.05 50);
+  }
+  
+  /* Smooth animations */
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  
+  /* Typography enhancements */
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+  
+  /* Focus improvements */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2;
+  }
+}
+
+/* Custom utility classes for enhanced visuals */
+@layer utilities {
+  .glass-morphism {
+    @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-white/20 dark:border-gray-700/20;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-[var(--surface-elevation-2)] hover:-translate-y-1;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent;
+  }
+  
+  .surface-elevated {
+    @apply shadow-[var(--surface-elevation-1)] bg-card/95 backdrop-blur-sm border border-border/50;
+  }
+  
+  .interactive-scale {
+    @apply transform transition-transform duration-200 active:scale-95 hover:scale-[1.02];
+  }
+  
+  .coffee-gradient {
+    background: linear-gradient(135deg, 
+      oklch(0.29 0.04 45) 0%, 
+      oklch(0.35 0.04 45) 50%, 
+      oklch(0.29 0.04 45) 100%);
+  }
+  
+  .warm-gradient {
+    background: linear-gradient(135deg, 
+      oklch(0.82 0.06 55) 0%, 
+      oklch(0.88 0.06 55) 50%, 
+      oklch(0.82 0.06 55) 100%);
   }
 }

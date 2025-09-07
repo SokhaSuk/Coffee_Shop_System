@@ -51,41 +51,44 @@ export function CashierDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-10">
+      <header className="border-b bg-card/90 backdrop-blur-md sticky top-0 z-20 shadow-[var(--surface-elevation-1)]">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary rounded-full p-2">
-                <Coffee className="h-6 w-6 text-primary-foreground" />
+            <div className="flex items-center gap-4">
+              <div className="coffee-gradient rounded-full p-3 shadow-[var(--surface-elevation-1)] interactive-scale">
+                <Coffee className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">DARK COFFEE</h1>
-                <p className="text-sm text-muted-foreground">Cashier System</p>
+                <h1 className="text-2xl font-bold text-gradient tracking-tight">DARK COFFEE</h1>
+                <p className="text-sm text-muted-foreground font-medium">Cashier System</p>
               </div>
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
               <Button
-                variant={activeSection === "pos" ? "default" : "outline"}
+                variant={activeSection === "pos" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveSection("pos")}
+                className="rounded-md"
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 POS
               </Button>
               <Button
-                variant={activeSection === "history" ? "default" : "outline"}
+                variant={activeSection === "history" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveSection("history")}
+                className="rounded-md"
               >
                 <History className="h-4 w-4 mr-2" />
                 History
               </Button>
               <Button
-                variant={activeSection === "products" ? "default" : "outline"}
+                variant={activeSection === "products" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveSection("products")}
+                className="rounded-md"
               >
                 <Package className="h-4 w-4 mr-2" />
                 Products
@@ -93,9 +96,9 @@ export function CashierDashboard() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="font-medium">{user?.name}</p>
-                <p className="text-sm text-muted-foreground capitalize">{user?.role}</p>
+              <div className="text-right hidden sm:block">
+                <p className="font-semibold text-card-foreground">{user?.name}</p>
+                <p className="text-xs text-muted-foreground capitalize font-medium">{user?.role}</p>
               </div>
               <Button
                 variant="outline"
@@ -103,9 +106,10 @@ export function CashierDashboard() {
                 onClick={async () => {
                   await logoutWithConfirmation()
                 }}
+                className="bg-background/80 hover:bg-destructive hover:text-destructive-foreground"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Coffee, Plus, Minus, Trash2, CreditCard, DollarSign, Receipt, ShoppingCart } from "lucide-react"
 import Image from "next/image"
@@ -170,7 +171,24 @@ export function CashierPOS() {
       <div className="lg:col-span-2 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="text-2xl font-bold text-coffee-900">Products</h2>
-          <div className="flex flex-wrap gap-2">
+          {/* Mobile category dropdown */}
+          <div className="sm:hidden w-full">
+            <Select value={selectedCategory} onValueChange={handleCategorySelect}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop/tablet pill filters with horizontal scroll */}
+          <div className="hidden sm:flex items-center gap-2 overflow-x-auto">
             {categoryOptions.map((category) => (
               <Button
                 key={category}
@@ -179,8 +197,8 @@ export function CashierPOS() {
                 onClick={() => handleCategorySelect(category)}
                 className={
                   selectedCategory === category
-                    ? "bg-coffee-600 hover:bg-coffee-700"
-                    : "border-coffee-300 text-coffee-700 hover:bg-coffee-100"
+                    ? "rounded-full bg-coffee-700 hover:bg-coffee-800 text-white"
+                    : "rounded-full border-coffee-300 text-coffee-700 hover:bg-coffee-50"
                 }
               >
                 {category}
@@ -197,7 +215,9 @@ export function CashierPOS() {
             return (
               <Card
                 key={product.id}
-                className={`cursor-pointer transition-all hover:shadow-md border-coffee-200 ${!product.available ? "opacity-50" : "hover:border-coffee-400"}`}
+                className={`cursor-pointer transition-all border border-coffee-200 hover:shadow-lg hover:-translate-y-0.5 ${
+                  !product.available ? "opacity-50" : "hover:border-coffee-400"
+                }`}
                 onClick={() => product.available && addToCart(product)}
               >
                 <CardHeader className="pb-2">
@@ -248,7 +268,15 @@ export function CashierPOS() {
                       )}
                     </div>
                     {product.available ? (
-                      <Button size="sm" className="bg-coffee-600 hover:bg-coffee-700">
+                      <Button
+                        size="sm"
+                        className="bg-coffee-600 hover:bg-coffee-700"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          addToCart(product)
+                        }}
+                        aria-label={`Add ${product.name} to cart`}
+                      >
                         <Plus className="h-4 w-4" />
                       </Button>
                     ) : (
