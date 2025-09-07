@@ -42,29 +42,20 @@ function getPort(argv) {
 
 function run() {
   const argv = process.argv.slice(2)
-  const ip = getLanIPv4()
+  const lanIp = getLanIPv4()
   const port = getPort(argv)
+  const bindHost = process.env.DEV_HOST || '0.0.0.0'
 
   console.log('')
   console.log(`Local:   http://localhost:${port}`)
-  console.log(`Network: http://${ip}:${port}`)
+  console.log(`Network: http://${lanIp}:${port}`)
   console.log('')
 
   const nextBin = require.resolve('next/dist/bin/next')
 
-  // Remove any provided host flags to avoid conflicts
-  const filtered = []
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i]
-    if (a === '-H' || a === '--hostname') {
-      i++ // skip value
-      continue
-    }
-    if (/^--hostname=/.test(a)) continue
-    filtered.push(a)
-  }
-
-  const args = ['dev', '-H', ip, ...filtered]
+  // Respect provided hostname flags, otherwise bind to 0.0.0.0
+  const hasHostFlag = argv.some((a) => a === '-H' || a === '--hostname' || /^--hostname=/.test(String(a)))
+  const args = hasHostFlag ? ['dev', ...argv] : ['dev', '-H', bindHost, ...argv]
 
   const child = spawn(process.execPath, [nextBin, ...args], {
     stdio: 'inherit',

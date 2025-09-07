@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useOrders, type Order } from "@/lib/order-context"
+import { useMemo, useState } from "react"
+import { useOrders, type Order, type DateFilterType } from "@/lib/order-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -34,12 +34,14 @@ import {
 } from "lucide-react"
 
 export function OrderManagement() {
-  const { orders, updateOrderStatus, cancelOrder, getOrderStats, getTodaysRevenue } = useOrders()
+  const { orders, updateOrderStatus, cancelOrder, getOrderStatsByDateFilter, getOrdersByDateFilter, getRevenueByDateFilter } = useOrders()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [dateFilter, setDateFilter] = useState<DateFilterType>("day")
 
-  const filteredOrders = orders.filter((order) => {
+  const timeFiltered = useMemo(() => getOrdersByDateFilter(dateFilter), [dateFilter, getOrdersByDateFilter])
+  const filteredOrders = timeFiltered.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customer.toLowerCase().includes(searchTerm.toLowerCase())
@@ -47,8 +49,8 @@ export function OrderManagement() {
     return matchesSearch && matchesStatus
   })
 
-  const stats = getOrderStats()
-  const todaysRevenue = getTodaysRevenue()
+  const stats = getOrderStatsByDateFilter(dateFilter)
+  const scopedRevenue = getRevenueByDateFilter(dateFilter)
 
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
@@ -118,8 +120,8 @@ export function OrderManagement() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Today's Revenue</p>
-                <p className="text-2xl font-bold">${todaysRevenue.toFixed(2)}</p>
+                <p className="text-sm font-medium text-muted-foreground">Revenue</p>
+                <p className="text-2xl font-bold">${scopedRevenue.toFixed(2)}</p>
               </div>
               <DollarSign className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -168,6 +170,17 @@ export function OrderManagement() {
                 className="pl-10"
               />
             </div>
+            <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilterType)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by date" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="day">Today</SelectItem>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filter by status" />

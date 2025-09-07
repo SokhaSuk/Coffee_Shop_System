@@ -1,22 +1,29 @@
 "use client"
 
-import { useState } from "react"
-import { useOrders, type Order } from "@/lib/order-context"
+import { useMemo, useState } from "react"
+import { useOrders, type Order, type DateFilterType } from "@/lib/order-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Clock, Search, Eye, Receipt, DollarSign, CheckCircle, AlertCircle } from "lucide-react"
 
 export function OrderHistory() {
-  const { orders } = useOrders()
+  const { orders, getOrdersByDateFilter } = useOrders()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [dateFilter, setDateFilter] = useState<DateFilterType>("day")
 
-  const filteredOrders = orders.filter(
-    (order) =>
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()),
+  const timeFiltered = useMemo(() => getOrdersByDateFilter(dateFilter), [dateFilter, getOrdersByDateFilter])
+  const filteredOrders = useMemo(
+    () =>
+      timeFiltered.filter(
+        (order) =>
+          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.customer.toLowerCase().includes(searchTerm.toLowerCase()),
+      ),
+    [timeFiltered, searchTerm],
   )
 
   const formatTime = (timestamp: string) => {
@@ -32,9 +39,20 @@ export function OrderHistory() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">Order History</h2>
         <div className="flex items-center gap-4">
+          <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilterType)}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Filter by date" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="day">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="all">All</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

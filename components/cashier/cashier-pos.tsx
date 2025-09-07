@@ -2,8 +2,9 @@
 
 import type React from "react"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { useProducts } from "@/lib/product-context"
+import type { Product as ProductType } from "@/lib/product-context"
 import { useOrders } from "@/lib/order-context"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
@@ -16,27 +17,10 @@ import { useToast } from "@/hooks/use-toast"
 import { Coffee, Plus, Minus, Trash2, CreditCard, DollarSign, Receipt, ShoppingCart } from "lucide-react"
 import Image from "next/image"
 
-interface Product {
-  id: string
-  name: string
-  price: number
-  category: string
-  description: string
-  available: boolean
-  image?: string
-  discount?: {
-    percentage: number
-    validFrom: string
-    validTo: string
-  }
-}
-
-interface CartItem extends Product {
-  quantity: number
-}
+type CartItem = ProductType & { quantity: number }
 
 export function CashierPOS() {
-  const { products, categories } = useProducts()
+  const { products, categories, getDiscountedPrice, isDiscountActive } = useProducts()
   const { createOrder } = useOrders()
   const { user } = useAuth()
   const { toast } = useToast()
@@ -44,6 +28,22 @@ export function CashierPOS() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [customerName, setCustomerName] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("card")
+
+  // Suggest other discounted products when user adds to cart
+  useEffect(() => {
+    if (cart.length === 0) return
+    const discounted = products.filter((p) => isDiscountActive(p))
+    if (discounted.length === 0) return
+    const lastAdded = cart[cart.length - 1]
+    const suggestions = discounted.filter((p) => p.id !== lastAdded.id).slice(0, 3)
+    if (suggestions.length > 0) {
+      const names = suggestions.map((s) => s.name).join(", ")
+      toast({
+        title: "Hot deals available",
+        description: `Discounts on: ${names}`,
+      })
+    }
+  }, [cart, products, isDiscountActive, toast])
 
   const categoryOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories])
 
@@ -53,22 +53,8 @@ export function CashierPOS() {
       : products.filter((p) => p.available && categories.find((c) => c.name === selectedCategory)?.id === p.category)
   }, [selectedCategory, products, categories])
 
-  const getDiscountedPrice = useCallback((product: Product) => {
-    if (!product.discount) return product.price
-
-    const now = new Date()
-    const validFrom = new Date(product.discount.validFrom)
-    const validTo = new Date(product.discount.validTo)
-
-    if (now >= validFrom && now <= validTo) {
-      return product.price * (1 - product.discount.percentage / 100)
-    }
-
-    return product.price
-  }, [])
-
   const addToCart = useCallback(
-    (product: Product) => {
+    (product: ProductType) => {
       setCart((prev) => {
         const existing = prev.find((item) => item.id === product.id)
         if (existing) {
@@ -132,13 +118,10 @@ export function CashierPOS() {
         id: item.id,
         name: item.name,
         price: getDiscountedPrice(item),
-        originalPrice: item.price,
         quantity: item.quantity,
         category: item.category,
-        discount: item.discount,
       })),
       subtotal,
-      discountAmount,
       tax,
       total,
       paymentMethod,
@@ -209,7 +192,7 @@ export function CashierPOS() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredProducts.map((product) => {
             const discountedPrice = getDiscountedPrice(product)
-            const hasDiscount = discountedPrice < product.price
+            const hasDiscount = discountedPrice < product.price && isDiscountActive(product)
 
             return (
               <Card
@@ -218,6 +201,13 @@ export function CashierPOS() {
                 onClick={() => product.available && addToCart(product)}
               >
                 <CardHeader className="pb-2">
+                  {hasDiscount && (
+                    <div className="mb-2">
+                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        Save {product.discount}% today
+                      </Badge>
+                    </div>
+                  )}
                   {product.image && (
                     <div className="relative w-full h-32 mb-3 rounded-lg overflow-hidden bg-coffee-50">
                       <Image
@@ -229,7 +219,7 @@ export function CashierPOS() {
                       />
                       {hasDiscount && (
                         <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                          -{product.discount?.percentage}%
+                          -{product.discount}%
                         </div>
                       )}
                     </div>

@@ -12,7 +12,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const { user, logout } = useAuth()
+  const { user, logoutWithConfirmation } = useAuth()
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
@@ -113,7 +113,9 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
               variant="outline"
               size="sm"
               className="w-full border-coffee-300 text-coffee-800 hover:bg-coffee-200 bg-transparent"
-              onClick={logout}
+              onClick={async () => {
+                await logoutWithConfirmation()
+              }}
             >
               <LogOut className="h-4 w-4 mr-2" />
               Logout

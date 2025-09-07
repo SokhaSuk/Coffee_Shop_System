@@ -85,7 +85,7 @@ export function LoginForm() {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-coffee-600 rounded-full p-3">
-              <Coffee className="h-8 w-8 text-white" />
+              <Coffee className="h-8 w-8" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-coffee-900">DARK COFFEE</CardTitle>

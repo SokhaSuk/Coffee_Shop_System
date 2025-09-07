@@ -10,7 +10,7 @@ import { Coffee, LogOut, ShoppingCart, History, Package } from "lucide-react"
 
 export function CashierDashboard() {
   const [activeSection, setActiveSection] = useState("pos")
-  const { user, logout } = useAuth()
+  const { user, logoutWithConfirmation } = useAuth()
 
   const renderContent = () => {
     switch (activeSection) {
@@ -97,7 +97,13 @@ export function CashierDashboard() {
                 <p className="font-medium">{user?.name}</p>
                 <p className="text-sm text-muted-foreground capitalize">{user?.role}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={logout}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  await logoutWithConfirmation()
+                }}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
