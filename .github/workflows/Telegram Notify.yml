@@ -1,0 +1,44 @@
+name: Telegram Notify
+
+on:
+  push:
+    branches:
+      - main   # change if your branch is not "main"
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Telegram message
+        id: build_message
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          REPO="${{ github.repository }}"
+          ACTOR="${{ github.actor }}"
+          REPO_NAME="${REPO##*/}"
+
+          AUTHOR_NAME=$(jq -r '.head_commit.author.name // empty' "$GITHUB_EVENT_PATH")
+          if [ -z "$AUTHOR_NAME" ]; then AUTHOR_NAME="$ACTOR"; fi
+          HEAD_MSG=$(jq -r '.head_commit.message // empty' "$GITHUB_EVENT_PATH")
+          HEAD_MSG_FIRST_LINE=$(printf "%s" "$HEAD_MSG" | sed -e 's/\r//g' -e 's/\n.*$//')
+
+          COMPARE_URL="https://github.com/${REPO}/compare/${{ github.event.before }}...${{ github.event.after }}"
+
+          html_escape() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'; }
+          AUTHOR_ESC=$(printf "%s" "$AUTHOR_NAME" | html_escape)
+          BRANCH_ESC=$(printf "%s" "$BRANCH" | html_escape)
+          REPO_NAME_ESC=$(printf "%s" "$REPO_NAME" | html_escape)
+          COMMIT_ESC=$(printf "%s" "$HEAD_MSG_FIRST_LINE" | html_escape)
+
+          TEXT="<b>📣 មានការផ្លាស់ប្តូរថ្មី 🚀</b>\n🔹 <b>Project:</b> ${REPO_NAME_ESC}\n🔹 <b>Branch:</b> ${BRANCH_ESC}\n🔹 <b>អ្នកផ្លាស់ប្ដូរ:</b> ${AUTHOR_ESC}\n🔹 <b>Commit:</b> ${COMMIT_ESC}\n\n<a href=\"${COMPARE_URL}\">មើលការផ្លាស់ប្តូរ</a>"
+
+          printf "%b" "$TEXT" > message.txt
+          echo "message_file=message.txt" >> "$GITHUB_OUTPUT"
+
+      - name: Send Telegram Message
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
+            --data-urlencode chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            --data-urlencode parse_mode=HTML \
+            --data-urlencode disable_web_page_preview=true \
+            --data-urlencode text@${{ steps.build_message.outputs.message_file }}
