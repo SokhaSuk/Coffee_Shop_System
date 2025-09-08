@@ -16,17 +16,19 @@ export type ReceiptData = {
   cashierName: string
   items: ReceiptItem[]
   subtotal: number
+  discountAmount?: number
+  discountLabel?: string
   tax: number
   total: number
   createdAt: string
 }
 
-export function ReceiptCard({ data, className }: { data: ReceiptData; className?: string }) {
+export function ReceiptCard({ data, className, variant = "customer" }: { data: ReceiptData; className?: string; variant?: "merchant" | "customer" }) {
   const date = new Date(data.createdAt)
   return (
     <div
       className={
-        "surface-elevated rounded-lg p-4 text-sm font-mono leading-6 text-foreground bg-card print:bg-white print:border print:border-black print:shadow-none " +
+        "surface-elevated rounded-lg p-3 md:p-4 text-[11px] md:text-sm font-mono leading-6 text-foreground bg-card print:bg-white print:border print:border-black print:shadow-none w-full max-w-full md:max-w-sm mx-auto break-words " +
         (className || "")
       }
     >
@@ -36,7 +38,7 @@ export function ReceiptCard({ data, className }: { data: ReceiptData; className?
         <p className="text-xs text-muted-foreground">Order #{data.orderId}</p>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-y-1 text-xs">
+      <div className="mt-3 grid grid-cols-2 gap-y-1 text-[10px] md:text-xs">
         <span className="text-muted-foreground">Date</span>
         <span>{date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
         <span className="text-muted-foreground">Cashier</span>
@@ -47,10 +49,10 @@ export function ReceiptCard({ data, className }: { data: ReceiptData; className?
 
       <div className="my-3 border-t border-dashed" />
 
-      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 gap-y-1">
-        <span className="text-xs text-muted-foreground">Item</span>
-        <span className="text-xs text-muted-foreground justify-self-end">Qty</span>
-        <span className="text-xs text-muted-foreground justify-self-end">Amount</span>
+      <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 md:gap-x-4 gap-y-1">
+        <span className="text-[10px] md:text-xs text-muted-foreground">Item</span>
+        <span className="text-[10px] md:text-xs text-muted-foreground justify-self-end">Qty</span>
+        <span className="text-[10px] md:text-xs text-muted-foreground justify-self-end">Amount</span>
         {data.items.map((it) => (
           <React.Fragment key={it.id}>
             <span className="truncate">{it.name}</span>
@@ -65,6 +67,12 @@ export function ReceiptCard({ data, className }: { data: ReceiptData; className?
       <div className="grid grid-cols-2 gap-y-1">
         <span className="justify-self-start">Subtotal</span>
         <span className="justify-self-end">${data.subtotal.toFixed(2)}</span>
+        {typeof data.discountAmount === "number" && data.discountAmount > 0 && (
+          <>
+            <span className="justify-self-start">Discount{data.discountLabel ? ` (${data.discountLabel})` : ""}</span>
+            <span className="justify-self-end">- ${data.discountAmount.toFixed(2)}</span>
+          </>
+        )}
         <span className="justify-self-start">Tax</span>
         <span className="justify-self-end">${data.tax.toFixed(2)}</span>
         <span className="justify-self-start font-semibold">Total</span>
@@ -73,7 +81,12 @@ export function ReceiptCard({ data, className }: { data: ReceiptData; className?
 
       <div className="mt-3 border-t border-dashed" />
 
-      <p className="mt-2 text-center text-xs">Thank you for your purchase!</p>
+      <p className="mt-2 text-center text-[10px] md:text-xs">Thank you for your purchase!</p>
+      {variant === "merchant" ? (
+        <p className="mt-1 text-center text-[10px] text-muted-foreground">Merchant copy · Keep for records</p>
+      ) : (
+        <p className="mt-1 text-center text-[10px] text-muted-foreground">Customer copy · Please keep your receipt</p>
+      )}
     </div>
   )
 }

@@ -73,6 +73,20 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
                 <h1 className="text-lg font-bold">DARK COFFEE</h1>
                 <p className="text-sm opacity-90">Admin Panel</p>
               </div>
+              {/* Mobile logout button in header */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto md:hidden"
+                onClick={async () => {
+                  await logoutWithConfirmation()
+                  setIsOpen(false)
+                }}
+                aria-label="Logout"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
             </div>
           </div>
 
@@ -112,7 +126,7 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
             <Button
               variant="ghost"
               size="sm"
-              className="w-full border border-sidebar-border/60 text-sidebar-foreground hover:bg-sidebar-accent/60 bg-transparent"
+              className="hidden md:inline-flex w-full border border-sidebar-border/60 text-sidebar-foreground hover:bg-sidebar-accent/60 bg-transparent"
               onClick={async () => {
                 await logoutWithConfirmation()
               }}

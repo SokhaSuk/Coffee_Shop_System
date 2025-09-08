@@ -38,7 +38,7 @@ const sections: Section[] = [
       {
         name: "lib/order-context.tsx",
         description:
-          "Orders context with create/update/cancel and date-scoped stats, revenue, and filtering helpers.",
+          "Orders context with create/update/cancel, getOrderById, createAdjustment (refunds), and date-scoped stats/revenue/filtering helpers.",
       },
       { name: "lib/utils.ts", description: "cn() helper combining clsx with tailwind-merge for class names." },
     ],
@@ -58,9 +58,9 @@ const sections: Section[] = [
     title: "Components – Cashier",
     items: [
       { name: "components/cashier/cashier-dashboard.tsx", description: "Cashier shell with tabs (POS, History, Products) and logout." },
-      { name: "components/cashier/cashier-pos.tsx", description: "POS flow with cart ops, discount-aware pricing, checkout and receipt printing." },
-      { name: "components/cashier/order-history.tsx", description: "Searchable, date-filtered order list with quick receipt copy." },
-      { name: "components/cashier/receipt-card.tsx", description: "Printable receipt component (merchant/customer copies)." },
+      { name: "components/cashier/cashier-pos.tsx", description: "POS flow with cart ops, manual discount (% or $), checkout and responsive dual receipts (merchant/customer)." },
+      { name: "components/cashier/order-history.tsx", description: "Searchable, date-filtered order list with quick receipt copy, Cancel for in-progress, Duplicate-to-POS, and Refund/Adjust for completed." },
+      { name: "components/cashier/receipt-card.tsx", description: "Responsive printable receipt component with merchant/customer variants and optional discount line." },
     ],
   },
   {

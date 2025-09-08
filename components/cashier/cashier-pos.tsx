@@ -34,6 +34,8 @@ export function CashierPOS() {
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("card")
   const [isReceiptOpen, setIsReceiptOpen] = useState(false)
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null)
+  const [discountType, setDiscountType] = useState<"percent" | "amount">("percent")
+  const [discountInput, setDiscountInput] = useState<string>("0")
 
   // Suggest other discounted products when user adds to cart
   useEffect(() => {
@@ -50,6 +52,39 @@ export function CashierPOS() {
       })
     }
   }, [cart, products, isDiscountActive, toast])
+
+  // Auto-load duplicated draft from Order History
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("darkCoffeeDraftOrder")
+      if (!raw) return
+      const draft = JSON.parse(raw) as { customer?: string; items?: Array<{ id: string; quantity: number }> }
+      if (!draft || !Array.isArray(draft.items) || draft.items.length === 0) {
+        localStorage.removeItem("darkCoffeeDraftOrder")
+        return
+      }
+      const doApply = window.confirm("A duplicated order draft was found. Apply it to POS?")
+      if (!doApply) {
+        return
+      }
+      const builtCart: CartItem[] = []
+      draft.items.forEach((it) => {
+        const p = products.find((x) => x.id === it.id)
+        if (p) {
+          builtCart.push({ ...p, quantity: Math.max(1, it.quantity || 1) })
+        }
+      })
+      if (builtCart.length > 0) {
+        setCart(builtCart)
+        if (draft.customer) setCustomerName(draft.customer)
+        toast({ title: "Draft applied", description: "You can now review and process the order." })
+      } else {
+        toast({ title: "Draft items unavailable", description: "None of the items were found in the catalog.", variant: "destructive" })
+      }
+      localStorage.removeItem("darkCoffeeDraftOrder")
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const categoryOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories])
 
@@ -100,13 +135,20 @@ export function CashierPOS() {
       return sum + discountedPrice * item.quantity
     }, 0)
 
-    const originalSubtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    const discountAmount = originalSubtotal - subtotal
-    const tax = subtotal * 0.085 // 8.5% tax
-    const total = subtotal + tax
+    // Manual discount is applied on top of already discounted subtotal and does NOT stack with promo discount.
+    const numericInput = isNaN(parseFloat(discountInput)) ? 0 : parseFloat(discountInput)
+    const clampedPercent = Math.min(100, Math.max(0, numericInput))
+    const clampedAmount = Math.max(0, numericInput)
 
-    return { subtotal, discountAmount, tax, total }
-  }, [cart, getDiscountedPrice])
+    const manualDiscount = discountType === "percent" ? subtotal * (clampedPercent / 100) : clampedAmount
+    const effectiveDiscount = Math.min(subtotal, manualDiscount)
+
+    const taxable = Math.max(0, subtotal - effectiveDiscount)
+    const tax = taxable * 0.085
+    const total = Math.max(0, taxable + tax)
+
+    return { subtotal, discountAmount: effectiveDiscount, tax, total }
+  }, [cart, getDiscountedPrice, discountType, discountInput])
 
   const processOrder = useCallback(() => {
     if (cart.length === 0) {
@@ -146,6 +188,8 @@ export function CashierPOS() {
       cashierName: orderData.cashierName,
       items: orderData.items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price })),
       subtotal: orderData.subtotal,
+      discountAmount: discountAmount,
+      discountLabel: discountType === "percent" ? `${Math.min(100, Math.max(0, parseFloat(discountInput || "0"))).toFixed(2)}%` : `$${Math.max(0, parseFloat(discountInput || "0")).toFixed(2)}`,
       tax: orderData.tax,
       total: orderData.total,
       createdAt: new Date().toISOString(),
@@ -171,6 +215,8 @@ export function CashierPOS() {
     clearCart,
     toast,
     getDiscountedPrice,
+    discountType,
+    discountInput,
   ])
 
   const handleCategorySelect = useCallback((category: string) => {
@@ -300,7 +346,7 @@ export function CashierPOS() {
 
                     <div>
                       <p className="text-sm sm:text-base font-semibold text-coffee-900 truncate">{product.name}</p>
-                      <p className="text-xs sm:text-sm text-coffee-600 line-clamp-2">{product.description}</p>
+                      <p className="text-xs sm:text-sm text-coffee-600 leading-tight line-clamp-1">{product.description}</p>
                     </div>
 
                     <div className="flex items-end justify-between pt-0.5 sm:pt-1">
@@ -504,6 +550,34 @@ export function CashierPOS() {
                   </div>
                 </div>
 
+                {/* Discount Controls */}
+                <div className="space-y-2">
+                  <Label className="text-coffee-800">Discount</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Select value={discountType} onValueChange={(v) => setDiscountType(v as "percent" | "amount")}>
+                      <SelectTrigger className="col-span-1">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="percent">% Percent</SelectItem>
+                        <SelectItem value="amount">$ Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={discountInput}
+                      onChange={(e) => setDiscountInput(e.target.value)}
+                      className="col-span-2"
+                      min={discountType === "percent" ? 0 : 0}
+                      max={discountType === "percent" ? 100 : undefined}
+                      step="0.01"
+                      placeholder={discountType === "percent" ? "0-100" : "0.00"}
+                    />
+                  </div>
+                  <div className="text-xs text-muted-foreground">Current discount applied: ${discountAmount.toFixed(2)}</div>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="space-y-2">
                   <Button
@@ -530,22 +604,22 @@ export function CashierPOS() {
 
       {/* Receipt Dialog */}
       <Dialog open={isReceiptOpen} onOpenChange={setIsReceiptOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[95vw] max-w-3xl md:w-auto md:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Receipt</DialogTitle>
             <DialogDescription>Merchant and Customer copies</DialogDescription>
           </DialogHeader>
           {receiptData && (
-            <div className="print-area grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="print-area grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <ReceiptCard data={{ ...receiptData, title: "Merchant Copy" }} />
+                <ReceiptCard data={{ ...receiptData, title: "Merchant Copy" }} variant="merchant" />
               </div>
               <div>
-                <ReceiptCard data={{ ...receiptData, title: "Customer Copy" }} />
+                <ReceiptCard data={{ ...receiptData, title: "Customer Copy" }} variant="customer" />
               </div>
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
             <Button
               variant="outline"
               onClick={() => setIsReceiptOpen(false)}

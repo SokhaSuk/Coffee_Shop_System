@@ -52,52 +52,19 @@ export function CashierDashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card/90 backdrop-blur-md sticky top-0 z-20 shadow-[var(--surface-elevation-1)]">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="order-1 flex-1">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="coffee-gradient rounded-full p-3 shadow-[var(--surface-elevation-1)] interactive-scale">
-                  <Coffee className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-gradient tracking-tight">DARK COFFEE</h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground font-medium">Cashier System</p>
-                </div>
+        <div className="w-full px-3 sm:px-4 py-3 sm:py-4">
+          {/* Top row: Title and Logout */}
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="coffee-gradient rounded-full p-3 shadow-[var(--surface-elevation-1)] interactive-scale">
+                <Coffee className="h-6 w-6 text-white" />
               </div>
-
-              {/* Navigation - directly under page title */}
-              <div className="mt-2 flex items-center gap-1 bg-muted/50 rounded-lg p-1 overflow-x-auto w-full">
-                <Button
-                  variant={activeSection === "pos" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setActiveSection("pos")}
-                  className="rounded-md"
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  POS
-                </Button>
-                <Button
-                  variant={activeSection === "history" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setActiveSection("history")}
-                  className="rounded-md"
-                >
-                  <History className="h-4 w-4 mr-2" />
-                  History
-                </Button>
-                <Button
-                  variant={activeSection === "products" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setActiveSection("products")}
-                  className="rounded-md"
-                >
-                  <Package className="h-4 w-4 mr-2" />
-                  Products
-                </Button>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gradient tracking-tight">DARK COFFEE</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Cashier System</p>
               </div>
             </div>
-
-            <div className="order-2 sm:order-2 flex items-center gap-3 sm:gap-4 self-end sm:self-auto">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div className="text-right hidden sm:block">
                 <p className="font-semibold text-card-foreground">{user?.name}</p>
                 <p className="text-xs text-muted-foreground capitalize font-medium">{user?.role}</p>
@@ -112,6 +79,39 @@ export function CashierDashboard() {
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Logout</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Second row: Navbar under the title, full width */}
+          <div className="mt-2">
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 w-full">
+              <Button
+                variant={activeSection === "pos" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveSection("pos")}
+                className="rounded-md flex-1 basis-0 min-w-0"
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                POS
+              </Button>
+              <Button
+                variant={activeSection === "history" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveSection("history")}
+                className="rounded-md flex-1 basis-0 min-w-0"
+              >
+                <History className="h-4 w-4 mr-2" />
+                History
+              </Button>
+              <Button
+                variant={activeSection === "products" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveSection("products")}
+                className="rounded-md flex-1 basis-0 min-w-0"
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Products
               </Button>
             </div>
           </div>

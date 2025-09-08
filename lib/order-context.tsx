@@ -34,6 +34,8 @@ interface OrderContextType {
   createOrder: (orderData: Omit<Order, "id" | "createdAt" | "updatedAt">) => string
   updateOrderStatus: (orderId: string, status: Order["status"]) => void
   cancelOrder: (orderId: string) => void
+  getOrderById: (orderId: string) => Order | undefined
+  createAdjustment: (orderId: string, amount: number) => string
   getOrdersByStatus: (status: Order["status"]) => Order[]
   getOrdersByDate: (date: string) => Order[]
   getTodaysOrders: () => Order[]
@@ -185,6 +187,33 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
 
   const cancelOrder = (orderId: string) => {
     updateOrderStatus(orderId, "cancelled")
+  }
+
+  const getOrderById = (orderId: string) => orders.find((o) => o.id === orderId)
+
+  // Creates a negative adjustment order to represent partial refunds/corrections.
+  const createAdjustment = (orderId: string, amount: number): string => {
+    const original = getOrderById(orderId)
+    const adjId = `ADJ-${String(orders.length + 1).padStart(3, "0")}`
+    const newOrder: Order = {
+      id: adjId,
+      customer: original?.customer || "Adjustment",
+      items: [
+        { id: "adj", name: `Adjustment for ${orderId}`, price: -Math.abs(amount), quantity: 1, category: "adjustment" },
+      ],
+      subtotal: -Math.abs(amount),
+      tax: 0,
+      total: -Math.abs(amount),
+      paymentMethod: original?.paymentMethod || "card",
+      status: "completed",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      cashierId: original?.cashierId || "unknown",
+      cashierName: original?.cashierName || "Unknown Cashier",
+    }
+    setOrders((prev) => [newOrder, ...prev])
+    return adjId
   }
 
   const getOrdersByStatus = (status: Order["status"]) => {
