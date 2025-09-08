@@ -15,8 +15,11 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { Coffee, Plus, Minus, Trash2, CreditCard, DollarSign, Receipt, ShoppingCart } from "lucide-react"
+import { Coffee, Plus, Minus, Trash2, CreditCard, DollarSign, Receipt, ShoppingCart, Printer } from "lucide-react"
 import Image from "next/image"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ReceiptCard, type ReceiptData } from "./receipt-card"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 
 type CartItem = ProductType & { quantity: number }
 
@@ -29,6 +32,8 @@ export function CashierPOS() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [customerName, setCustomerName] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("card")
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false)
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null)
 
   // Suggest other discounted products when user adds to cart
   useEffect(() => {
@@ -132,6 +137,21 @@ export function CashierPOS() {
     }
 
     const orderId = createOrder(orderData)
+
+    // Prepare receipt data before clearing cart
+    setReceiptData({
+      title: "Merchant Copy",
+      orderId,
+      customer: orderData.customer,
+      cashierName: orderData.cashierName,
+      items: orderData.items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price })),
+      subtotal: orderData.subtotal,
+      tax: orderData.tax,
+      total: orderData.total,
+      createdAt: new Date().toISOString(),
+    })
+    setIsReceiptOpen(true)
+
     clearCart()
 
     toast({
@@ -207,83 +227,112 @@ export function CashierPOS() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {filteredProducts.map((product) => {
             const discountedPrice = getDiscountedPrice(product)
             const hasDiscount = discountedPrice < product.price && isDiscountActive(product)
+            const lowStock = product.available && product.stock <= 5
 
             return (
               <Card
                 key={product.id}
-                className={`cursor-pointer transition-all border border-coffee-200 hover:shadow-lg hover:-translate-y-0.5 ${
-                  !product.available ? "opacity-50" : "hover:border-coffee-400"
+                className={`group relative cursor-pointer overflow-hidden transition-all border border-coffee-200 hover:shadow-md sm:hover:shadow-lg hover:-translate-y-0.5 focus-within:ring-1 focus-within:ring-ring/30 ${
+                  !product.available ? "opacity-60" : "hover:border-coffee-400"
                 }`}
                 onClick={() => product.available && addToCart(product)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    if (product.available) addToCart(product)
+                  }
+                }}
+                aria-label={`Add ${product.name} to cart`}
+                aria-disabled={!product.available}
               >
-                <CardHeader className="pb-2">
-                  {hasDiscount && (
-                    <div className="mb-2">
-                      <Badge variant="secondary" className="bg-green-100 text-green-700">
-                        Save {product.discount}% today
-                      </Badge>
-                    </div>
-                  )}
-                  {product.image && (
-                    <div className="relative w-full h-32 mb-3 rounded-lg overflow-hidden bg-coffee-50">
+                <div className="p-0">
+                  <div className="relative">
+                    <AspectRatio ratio={4 / 3}>
                       <Image
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
                         fill
-                        className="object-cover"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                        placeholder={product.image ? undefined : "empty"}
                       />
-                      {hasDiscount && (
-                        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                          -{product.discount}%
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="bg-coffee-600/10 rounded-full p-1">
-                      <Coffee className="h-4 w-4 text-coffee-600" />
-                    </div>
-                    <Badge variant="secondary" className="text-xs bg-coffee-100 text-coffee-800">
-                      {categories.find((c) => c.id === product.category)?.name || product.category}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-lg text-coffee-900">{product.name}</CardTitle>
-                  <CardDescription className="text-sm text-coffee-600">{product.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      {hasDiscount ? (
-                        <>
-                          <span className="text-xl font-bold text-coffee-900">${discountedPrice.toFixed(2)}</span>
-                          <span className="text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
-                        </>
-                      ) : (
-                        <span className="text-xl font-bold text-coffee-900">${product.price.toFixed(2)}</span>
-                      )}
-                    </div>
-                    {product.available ? (
-                      <Button
-                        size="sm"
-                        className="bg-coffee-600 hover:bg-coffee-700"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          addToCart(product)
-                        }}
-                        aria-label={`Add ${product.name} to cart`}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Badge variant="destructive">Out of Stock</Badge>
+                    </AspectRatio>
+
+                    {/* Overlays */}
+                    {hasDiscount && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded shadow-sm">
+                        -{product.discount}%
+                      </div>
+                    )}
+                    {lowStock && (
+                      <div className="absolute top-2 left-2 bg-amber-500 text-white text-xs px-2 py-1 rounded shadow-sm">
+                        Low stock
+                      </div>
+                    )}
+                    {!product.available && (
+                      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] grid place-items-center text-white text-xs">
+                        Out of stock
+                      </div>
                     )}
                   </div>
-                </CardContent>
+
+                  <div className="p-2 sm:p-3 space-y-1.5 sm:space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-coffee-600/10 rounded-full p-0.5 sm:p-1">
+                        <Coffee className="h-3 w-3 sm:h-4 sm:w-4 text-coffee-600" />
+                      </div>
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs bg-coffee-100 text-coffee-800">
+                        {categories.find((c) => c.id === product.category)?.name || product.category}
+                      </Badge>
+                      {hasDiscount && (
+                        <Badge variant="secondary" className="text-[10px] sm:text-xs bg-green-100 text-green-700">
+                          Save {product.discount}%
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-coffee-900 truncate">{product.name}</p>
+                      <p className="text-xs sm:text-sm text-coffee-600 line-clamp-2">{product.description}</p>
+                    </div>
+
+                    <div className="flex items-end justify-between pt-0.5 sm:pt-1">
+                      <div className="flex flex-col leading-tight">
+                        {hasDiscount ? (
+                          <>
+                            <span className="text-lg sm:text-xl font-bold text-coffee-900">${discountedPrice.toFixed(2)}</span>
+                            <span className="text-[10px] sm:text-xs text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                          </>
+                        ) : (
+                          <span className="text-lg sm:text-xl font-bold text-coffee-900">${product.price.toFixed(2)}</span>
+                        )}
+                      </div>
+                      {product.available ? (
+                        <Button
+                          size="sm"
+                          className="bg-coffee-600 hover:bg-coffee-700"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            addToCart(product)
+                          }}
+                          aria-label={`Add ${product.name} to cart`}
+                        >
+                          <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="ml-1 hidden sm:inline">Add</span>
+                        </Button>
+                      ) : (
+                        <Badge variant="destructive">Unavailable</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </Card>
             )
           })}
@@ -478,6 +527,41 @@ export function CashierPOS() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Receipt Dialog */}
+      <Dialog open={isReceiptOpen} onOpenChange={setIsReceiptOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Receipt</DialogTitle>
+            <DialogDescription>Merchant and Customer copies</DialogDescription>
+          </DialogHeader>
+          {receiptData && (
+            <div className="print-area grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <ReceiptCard data={{ ...receiptData, title: "Merchant Copy" }} />
+              </div>
+              <div>
+                <ReceiptCard data={{ ...receiptData, title: "Customer Copy" }} />
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsReceiptOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Print
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

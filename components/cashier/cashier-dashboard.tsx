@@ -22,20 +22,20 @@ export function CashierDashboard() {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Product Catalog</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {["Espresso", "Latte", "Cappuccino", "Americano", "Mocha", "Macchiato"].map((product) => (
-                <Card key={product}>
+                <Card key={product} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Coffee className="h-5 w-5" />
+                      <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />
                       {product}
                     </CardTitle>
                     <CardDescription>Premium coffee blend</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold">$4.50</span>
-                      <span className="text-sm text-green-600">In Stock</span>
+                      <span className="text-base sm:text-lg font-bold">$4.50</span>
+                      <span className="text-xs sm:text-sm text-green-600">In Stock</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -52,50 +52,52 @@ export function CashierDashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card/90 backdrop-blur-md sticky top-0 z-20 shadow-[var(--surface-elevation-1)]">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="coffee-gradient rounded-full p-3 shadow-[var(--surface-elevation-1)] interactive-scale">
-                <Coffee className="h-6 w-6 text-white" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="order-1 flex-1">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="coffee-gradient rounded-full p-3 shadow-[var(--surface-elevation-1)] interactive-scale">
+                  <Coffee className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-gradient tracking-tight">DARK COFFEE</h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-medium">Cashier System</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gradient tracking-tight">DARK COFFEE</h1>
-                <p className="text-sm text-muted-foreground font-medium">Cashier System</p>
+
+              {/* Navigation - directly under page title */}
+              <div className="mt-2 flex items-center gap-1 bg-muted/50 rounded-lg p-1 overflow-x-auto w-full">
+                <Button
+                  variant={activeSection === "pos" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveSection("pos")}
+                  className="rounded-md"
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  POS
+                </Button>
+                <Button
+                  variant={activeSection === "history" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveSection("history")}
+                  className="rounded-md"
+                >
+                  <History className="h-4 w-4 mr-2" />
+                  History
+                </Button>
+                <Button
+                  variant={activeSection === "products" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveSection("products")}
+                  className="rounded-md"
+                >
+                  <Package className="h-4 w-4 mr-2" />
+                  Products
+                </Button>
               </div>
             </div>
 
-            {/* Navigation */}
-            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-              <Button
-                variant={activeSection === "pos" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveSection("pos")}
-                className="rounded-md"
-              >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                POS
-              </Button>
-              <Button
-                variant={activeSection === "history" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveSection("history")}
-                className="rounded-md"
-              >
-                <History className="h-4 w-4 mr-2" />
-                History
-              </Button>
-              <Button
-                variant={activeSection === "products" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveSection("products")}
-                className="rounded-md"
-              >
-                <Package className="h-4 w-4 mr-2" />
-                Products
-              </Button>
-            </div>
-
-            <div className="flex items-center gap-4">
+            <div className="order-2 sm:order-2 flex items-center gap-3 sm:gap-4 self-end sm:self-auto">
               <div className="text-right hidden sm:block">
                 <p className="font-semibold text-card-foreground">{user?.name}</p>
                 <p className="text-xs text-muted-foreground capitalize font-medium">{user?.role}</p>
@@ -117,7 +119,7 @@ export function CashierDashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">{renderContent()}</main>
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">{renderContent()}</main>
     </div>
   )
 }

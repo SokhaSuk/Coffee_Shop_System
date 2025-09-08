@@ -5,6 +5,8 @@ import { GeistMono } from "geist/font/mono"
 import { AuthProvider } from "@/lib/auth-context"
 import { ProductProvider } from "@/lib/product-context"
 import { OrderProvider } from "@/lib/order-context"
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 // Geist fonts provided by the `geist` package already include variables
@@ -23,12 +25,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-      <body className="font-sans" suppressHydrationWarning>
-        <AuthProvider>
-          <ProductProvider>
-            <OrderProvider>{children}</OrderProvider>
-          </ProductProvider>
-        </AuthProvider>
+      <body className="font-sans min-h-screen" suppressHydrationWarning>
+        <a href="#main" className="skip-link">Skip to main content</a>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AuthProvider>
+            <ProductProvider>
+              <OrderProvider>
+                <main id="main" role="main">{children}</main>
+              </OrderProvider>
+            </ProductProvider>
+          </AuthProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   )

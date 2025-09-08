@@ -170,6 +170,16 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 200ms;
   }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
   
   /* Typography enhancements */
   h1, h2, h3, h4, h5, h6 {
@@ -184,6 +194,10 @@
 
 /* Custom utility classes for enhanced visuals */
 @layer utilities {
+  /* Accessible skip link */
+  .skip-link {
+    @apply sr-only focus:not-sr-only fixed top-2 left-2 z-[100] bg-primary text-primary-foreground px-3 py-2 rounded-md shadow-sm;
+  }
   .glass-morphism {
     @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-white/20 dark:border-gray-700/20;
   }
@@ -216,5 +230,24 @@
       oklch(0.82 0.06 55) 0%, 
       oklch(0.88 0.06 55) 50%, 
       oklch(0.82 0.06 55) 100%);
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    background: white !important;
+    box-shadow: none !important;
   }
 }

@@ -128,10 +128,10 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex min-h-screen bg-background">
       <AdminSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       <main className="flex-1 overflow-auto">
-        <div className="p-6 md:p-8 md:ml-0">{renderContent()}</div>
+        <div className="container mx-auto px-4 py-4 md:py-6 md:ml-0">{renderContent()}</div>
       </main>
     </div>
   )

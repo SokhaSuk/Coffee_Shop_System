@@ -44,7 +44,7 @@ function run() {
   const argv = process.argv.slice(2)
   const lanIp = getLanIPv4()
   const port = getPort(argv)
-  const bindHost = process.env.DEV_HOST || '0.0.0.0'
+  const bindHost = process.env.DEV_HOST || lanIp
 
   console.log('')
   console.log(`Local:   http://localhost:${port}`)
