@@ -93,7 +93,6 @@ const sections: Section[] = [
     title: "Scripts",
     items: [
       { name: "scripts/run-dev.js", description: "Finds LAN IP/port and starts next dev bound to LAN." },
-      { name: "scripts/print-host.js", description: "Prints Local and Network URLs for a target port." },
     ],
   },
   {

@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Print styles CSS import removed */
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -230,24 +232,5 @@
       oklch(0.82 0.06 55) 0%, 
       oklch(0.88 0.06 55) 50%, 
       oklch(0.82 0.06 55) 100%);
-  }
-}
-
-/* Print styles for receipts */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  .print-area, .print-area * {
-    visibility: visible;
-  }
-  .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 0;
-    background: white !important;
-    box-shadow: none !important;
   }
 }

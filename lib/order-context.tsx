@@ -16,9 +16,10 @@ export interface Order {
   customer: string
   items: OrderItem[]
   subtotal: number
-  tax: number
   total: number
   paymentMethod: "cash" | "card"
+  paidAmount?: number
+  changeAmount?: number
   status: "pending" | "preparing" | "ready" | "completed" | "cancelled"
   createdAt: string
   updatedAt: string
@@ -76,7 +77,6 @@ const initialOrders: Order[] = [
       { id: "4", name: "Croissant", price: 3.25, quantity: 1, category: "pastry" },
     ],
     subtotal: 12.25,
-    tax: 1.04,
     total: 13.29,
     paymentMethod: "card",
     status: "completed",
@@ -94,7 +94,6 @@ const initialOrders: Order[] = [
       { id: "9", name: "Cookie", price: 2.25, quantity: 2, category: "pastry" },
     ],
     subtotal: 8.0,
-    tax: 0.68,
     total: 8.68,
     paymentMethod: "cash",
     status: "preparing",
@@ -111,7 +110,6 @@ const initialOrders: Order[] = [
       { id: "8", name: "Muffin", price: 2.75, quantity: 1, category: "pastry" },
     ],
     subtotal: 7.0,
-    tax: 0.6,
     total: 7.6,
     paymentMethod: "card",
     status: "ready",
@@ -125,7 +123,6 @@ const initialOrders: Order[] = [
     customer: "Mike Johnson",
     items: [{ id: "2", name: "Americano", price: 4.0, quantity: 1, category: "coffee" }],
     subtotal: 4.0,
-    tax: 0.34,
     total: 4.34,
     paymentMethod: "cash",
     status: "completed",
@@ -143,7 +140,6 @@ const initialOrders: Order[] = [
       { id: "5", name: "Muffin", price: 2.75, quantity: 2, category: "pastry" },
     ],
     subtotal: 10.0,
-    tax: 0.85,
     total: 10.85,
     paymentMethod: "card",
     status: "completed",
@@ -202,7 +198,6 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         { id: "adj", name: `Adjustment for ${orderId}`, price: -Math.abs(amount), quantity: 1, category: "adjustment" },
       ],
       subtotal: -Math.abs(amount),
-      tax: 0,
       total: -Math.abs(amount),
       paymentMethod: original?.paymentMethod || "card",
       status: "completed",

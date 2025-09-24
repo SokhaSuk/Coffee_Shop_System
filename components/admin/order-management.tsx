@@ -35,6 +35,7 @@ import {
 
 export function OrderManagement() {
   const { orders, updateOrderStatus, cancelOrder, getOrderStatsByDateFilter, getOrdersByDateFilter, getRevenueByDateFilter } = useOrders()
+  const [ , setStatusJustUpdated ] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -248,7 +249,12 @@ export function OrderManagement() {
                         {order.status !== "completed" && order.status !== "cancelled" && (
                           <Select
                             value={order.status}
-                            onValueChange={(value) => updateOrderStatus(order.id, value as Order["status"])}
+                            onValueChange={(value) => {
+                              updateOrderStatus(order.id, value as Order["status"])
+                              // Success toast-like feedback via inline badge flash
+                              setStatusJustUpdated(true)
+                              setTimeout(() => setStatusJustUpdated(false), 800)
+                            }}
                           >
                             <SelectTrigger className="w-32">
                               <SelectValue />
@@ -270,15 +276,15 @@ export function OrderManagement() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Cancel Order</AlertDialogTitle>
+                                <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to cancel order {order.id}? This action cannot be undone.
+                                  You’re about to cancel order {order.id}. This will stop further processing and cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>No, Keep Order</AlertDialogCancel>
+                                <AlertDialogCancel>Keep order</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => cancelOrder(order.id)}>
-                                  Yes, Cancel Order
+                                  Cancel order
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -395,10 +401,6 @@ export function OrderManagement() {
                 <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
                   <span>${selectedOrder.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Tax:</span>
-                  <span>${selectedOrder.tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold">
                   <span>Total:</span>
