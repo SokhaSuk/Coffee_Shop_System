@@ -13,8 +13,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { DailySalesReport } from "./sales-report"
 import { ReceiptCard, type ReceiptData } from "./receipt-card"
-import { CustomerReceipt } from "./CustomerReceipt"
-import { MerchantReceipt } from "./MerchantReceipt"
 import { downloadElementAsPdf, createSimpleReceiptPdf } from "@/lib/pdf"
 import { useToast } from "@/hooks/use-toast"
 
@@ -97,7 +95,7 @@ export function OrderHistory() {
         subtotal: targetOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
         total: targetOrder.total,
         createdAt: targetOrder.createdAt,
-        paymentMethod: targetOrder.paymentMethod as "cash" | "card"
+        paymentMethod: targetOrder.paymentMethod as "cash" | "card" | "digital"
       }
 
       // Generate receipt HTML directly
@@ -266,7 +264,20 @@ export function OrderHistory() {
         subtotal: targetOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
         total: targetOrder.total,
         createdAt: targetOrder.createdAt,
-        paymentMethod: targetOrder.paymentMethod as "cash" | "card"
+        paymentMethod: targetOrder.paymentMethod as "cash" | "card" | "digital",
+        // Customer Copy enhancements
+        loyaltyPoints: Math.floor(targetOrder.total * 2), // 2 points per dollar spent
+        loyaltyMessage: "Thank you for being a valued customer!",
+        qrCodeUrl: "https://dacoffee.com/feedback",
+        // Merchant Copy enhancements
+        authorizationCode: targetOrder.paymentMethod === "card" ? "AUTH" + Math.random().toString().substring(2, 8).toUpperCase() : undefined,
+        maskedCardNumber: targetOrder.paymentMethod === "card" ? "XXXX-XXXX-XXXX-1234" : undefined,
+        cardType: targetOrder.paymentMethod === "card" ? "VISA" : undefined,
+        requiresSignature: targetOrder.paymentMethod === "card" && targetOrder.total > 25,
+        internalNotes: `Customer satisfaction rating: Excellent. Order completed successfully.`,
+        registerNumber: "REG-001",
+        shiftId: "SHIFT-A",
+        transactionReference: targetOrder.id,
       }
 
       // Generate customer receipt using visual component
@@ -648,7 +659,20 @@ export function OrderHistory() {
                       subtotal: selectedOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
                       total: selectedOrder.total,
                       createdAt: selectedOrder.createdAt,
-                      paymentMethod: selectedOrder.paymentMethod as "cash" | "card"
+                      paymentMethod: selectedOrder.paymentMethod as "cash" | "card" | "digital",
+                      // Customer Copy enhancements
+                      loyaltyPoints: Math.floor(selectedOrder.total * 2), // 2 points per dollar spent
+                      loyaltyMessage: "Thank you for being a valued customer!",
+                      qrCodeUrl: "https://dacoffee.com/feedback",
+                      // Merchant Copy enhancements
+                      authorizationCode: selectedOrder.paymentMethod === "card" ? "AUTH" + Math.random().toString().substring(2, 8).toUpperCase() : undefined,
+                      maskedCardNumber: selectedOrder.paymentMethod === "card" ? "XXXX-XXXX-XXXX-1234" : undefined,
+                      cardType: selectedOrder.paymentMethod === "card" ? "VISA" : undefined,
+                      requiresSignature: selectedOrder.paymentMethod === "card" && selectedOrder.total > 25,
+                      internalNotes: `Customer satisfaction rating: Excellent. Order completed successfully.`,
+                      registerNumber: "REG-001",
+                      shiftId: "SHIFT-A",
+                      transactionReference: selectedOrder.id,
                     }}
                     variant="customer"
                   />
@@ -685,34 +709,45 @@ export function OrderHistory() {
       {/* Off-screen areas for PDF export (must be rendered for html2canvas) */}
       <div style={{ position: "absolute", left: -99999, top: 0 }} aria-hidden>
         <div ref={customerReceiptRef}>
-          <CustomerReceipt
-            orderId={selectedOrder?.id || ""}
-            customer={selectedOrder?.customer || ""}
-            items={selectedOrder?.items.map((item) => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price
-            })) || []}
-            subtotal={selectedOrder?.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0}
-            total={selectedOrder?.total || 0}
-            createdAt={selectedOrder?.createdAt || ""}
-            paymentMethod={selectedOrder?.paymentMethod}
+          <ReceiptCard
+            data={{
+              title: "Customer Receipt",
+              orderId: selectedOrder?.id || "",
+              customer: selectedOrder?.customer || "",
+              cashierName: "System",
+              items: selectedOrder?.items.map((item) => ({
+                id: item.id || `item-${selectedOrder?.items.indexOf(item)}`,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+              })) || [],
+              subtotal: selectedOrder?.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0,
+              total: selectedOrder?.total || 0,
+              createdAt: selectedOrder?.createdAt || "",
+              paymentMethod: selectedOrder?.paymentMethod as "cash" | "card" | "digital"
+            }}
+            variant="customer"
           />
         </div>
         <div ref={merchantReceiptRef}>
-          <MerchantReceipt
-            orderId={selectedOrder?.id || ""}
-            customer={selectedOrder?.customer || ""}
-            cashierName="System"
-            items={selectedOrder?.items.map((item) => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price
-            })) || []}
-            subtotal={selectedOrder?.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0}
-            total={selectedOrder?.total || 0}
-            createdAt={selectedOrder?.createdAt || ""}
-            paymentMethod={selectedOrder?.paymentMethod}
+          <ReceiptCard
+            data={{
+              title: "Merchant Copy",
+              orderId: selectedOrder?.id || "",
+              customer: selectedOrder?.customer || "",
+              cashierName: "System",
+              items: selectedOrder?.items.map((item) => ({
+                id: item.id || `item-${selectedOrder?.items.indexOf(item)}`,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+              })) || [],
+              subtotal: selectedOrder?.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0,
+              total: selectedOrder?.total || 0,
+              createdAt: selectedOrder?.createdAt || "",
+              paymentMethod: selectedOrder?.paymentMethod as "cash" | "card" | "digital"
+            }}
+            variant="merchant"
           />
         </div>
       </div>

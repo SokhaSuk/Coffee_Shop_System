@@ -27,7 +27,7 @@ export function useAsync<T>(
     }
   }, [asyncFunction])
 
-  const refetch = useCallback(() => execute(), [execute])
+  const refetch = useCallback(async () => { await execute() }, [execute])
 
   useEffect(() => {
     if (immediate) {

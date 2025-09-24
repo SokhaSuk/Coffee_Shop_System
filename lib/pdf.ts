@@ -79,8 +79,7 @@ export async function downloadElementAsPdf(
       width: clonedElement.scrollWidth,
       height: clonedElement.scrollHeight,
       removeContainer: true,
-      foreignObjectRendering: false, // Disable foreign object rendering to avoid CSS issues
-      useComputedStyle: true
+      foreignObjectRendering: false // Disable foreign object rendering to avoid CSS issues
     })
 
     // Clean up the cloned element if it was added to DOM

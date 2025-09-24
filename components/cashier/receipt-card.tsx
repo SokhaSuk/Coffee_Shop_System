@@ -21,9 +21,22 @@ export type ReceiptData = {
   discountLabel?: string
   total: number
   createdAt: string
-  paymentMethod?: "cash" | "card"
+  paymentMethod?: "cash" | "card" | "digital"
   paidAmount?: number
   changeAmount?: number
+  // Customer Copy enhancements
+  loyaltyPoints?: number
+  loyaltyMessage?: string
+  qrCodeUrl?: string
+  // Merchant Copy enhancements
+  authorizationCode?: string
+  maskedCardNumber?: string
+  cardType?: string
+  requiresSignature?: boolean
+  internalNotes?: string
+  registerNumber?: string
+  shiftId?: string
+  transactionReference?: string
 }
 
 export const ReceiptCard = React.forwardRef<HTMLDivElement, { data: ReceiptData; className?: string; variant?: "merchant" | "customer" }>(
@@ -183,15 +196,49 @@ export const ReceiptCard = React.forwardRef<HTMLDivElement, { data: ReceiptData;
           </div>
         </div>
         
-        {/* Payment Information */}
+        {/* Enhanced Payment Information */}
         <div className="mt-4 pt-3 border-t border-dotted border-gray-300">
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-sm mb-2">
             <div className="flex items-center gap-1">
+              <CreditCard className="w-3 h-3 text-amber-600" />
               <span className="font-medium">Payment Method:</span>
             </div>
             <span className="capitalize font-semibold">{data.paymentMethod}</span>
           </div>
-          
+
+          {/* Card Payment Details - Merchant Copy Only */}
+          {!isCustomer && data.paymentMethod === "card" && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+              <div className="space-y-2 text-sm">
+                {data.cardType && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Card Type:</span>
+                    <span className="font-semibold text-blue-600">{data.cardType}</span>
+                  </div>
+                )}
+                {data.maskedCardNumber && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Card Number:</span>
+                    <span className="font-mono font-semibold">{data.maskedCardNumber}</span>
+                  </div>
+                )}
+                {data.authorizationCode && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Auth Code:</span>
+                    <span className="font-mono font-bold text-green-600">{data.authorizationCode}</span>
+                  </div>
+                )}
+                {data.transactionReference && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Reference:</span>
+                    <span className="font-mono text-gray-700">{data.transactionReference}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Cash Payment Details */}
           {data.paymentMethod === "cash" && typeof data.paidAmount === "number" && (
             <>
               <div className="flex justify-between text-sm mt-1">
@@ -206,45 +253,158 @@ export const ReceiptCard = React.forwardRef<HTMLDivElement, { data: ReceiptData;
               )}
             </>
           )}
+
+          {/* Digital Payment Details */}
+          {data.paymentMethod === "digital" && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
+              <div className="text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Digital Wallet:</span>
+                  <span className="font-semibold text-purple-600">Mobile Payment</span>
+                </div>
+                {data.transactionReference && (
+                  <div className="flex justify-between mt-1">
+                    <span className="text-gray-600">Transaction ID:</span>
+                    <span className="font-mono text-gray-700">{data.transactionReference}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Signature Line - Merchant Copy Only */}
+          {!isCustomer && data.paymentMethod === "card" && data.requiresSignature && (
+            <div className="mt-3 pt-3 border-t border-dotted border-gray-400">
+              <div className="mb-2">
+                <span className="text-sm font-medium text-gray-700">Customer Signature:</span>
+              </div>
+              <div className="border-b border-gray-400 w-full mb-2">
+                <div className="h-8 bg-gray-50"></div>
+              </div>
+              <div className="text-xs text-gray-500">I agree to pay the above amount according to card issuer agreement</div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Footer Section */}
+      {/* Enhanced Footer Section */}
       <div className="receipt-footer border-t border-dashed border-gray-400 pt-4 text-center">
         {isCustomer ? (
           <>
+            {/* Customer Thank You Section */}
             <div className="mb-4">
-              <p className="text-base font-medium text-gray-800 mb-2">Thank you for visiting!</p>
-              <p className="text-xs text-gray-600 mb-1">We appreciate your business</p>
-              <p className="text-xs text-gray-600">Follow us: @DaCoffee | www.dacoffee.com</p>
-            </div>
-            
-            {/* QR Code for customer feedback or loyalty program */}
-            <div className="mb-3 flex justify-center print:mb-2">
-              <div className="bg-gray-100 p-2 rounded print:p-1">
-                <p className="text-xs text-gray-600 mt-1 print:text-[8px] print:mt-0">Visit: www.dacoffee.com for feedback</p>
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 mb-4">
+                <p className="text-lg font-bold text-gray-800 mb-2">Thank you for visiting!</p>
+                <p className="text-sm text-gray-600 mb-1">We appreciate your business</p>
+                <p className="text-sm text-amber-700 font-medium">Follow us: @DaCoffee | www.dacoffee.com</p>
+              </div>
+
+              {/* Loyalty Points Section */}
+              {data.loyaltyPoints !== undefined && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Award className="w-4 h-4 text-green-600" />
+                    <span className="font-bold text-green-800">Loyalty Points Earned!</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-2xl font-bold text-green-600">+{data.loyaltyPoints}</span>
+                    <span className="text-sm text-green-700">points</span>
+                  </div>
+                  {data.loyaltyMessage && (
+                    <p className="text-xs text-green-600 mt-1">{data.loyaltyMessage}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Enhanced QR Code for feedback */}
+              {data.qrCodeUrl && (
+                <div className="mb-3 flex justify-center">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 p-4 rounded-lg text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                      <div className="w-8 h-8 bg-blue-500 rounded"></div>
+                    </div>
+                    <p className="text-sm font-medium text-blue-800 mb-1">Scan for Feedback</p>
+                    <p className="text-xs text-blue-600">Rate your experience</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Return Policy */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+                <p className="text-xs text-gray-600">
+                  <strong>Return Policy:</strong> Items may be returned within 30 days with receipt
+                </p>
               </div>
             </div>
-            
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>Customer Copy - Please keep your receipt</p>
+
+            <div className="text-xs text-gray-500 space-y-1 border-t border-gray-200 pt-2">
+              <p className="font-medium">Customer Copy - Please keep your receipt</p>
               <p>Receipt #{data.orderId}</p>
+              <p>Generated: {dateStr} at {timeStr}</p>
             </div>
           </>
         ) : (
           <>
+            {/* Merchant Header */}
             <div className="mb-4 space-y-2">
-              <p className="text-sm font-bold text-gray-800">MERCHANT COPY</p>
-              <p className="text-xs text-gray-600">Keep for business records</p>
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200 border border-gray-300 rounded-lg p-3">
+                <p className="text-lg font-bold text-gray-800">MERCHANT COPY</p>
+                <p className="text-sm text-gray-600">Keep for business records</p>
+              </div>
             </div>
-            
-            <div className="text-xs text-gray-500 space-y-1">
-              <p>For internal use only</p>
-              <p>Transaction ID: {data.orderId}</p>
-              <p>Generated: {dateStr} at {timeStr}</p>
+
+            {/* Internal Notes Section */}
+            {(data.internalNotes || data.registerNumber || data.shiftId) && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div className="text-left space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Internal Notes:</span>
+                  </div>
+                  {data.registerNumber && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Register:</span>
+                      <span className="font-semibold text-gray-800">#{data.registerNumber}</span>
+                    </div>
+                  )}
+                  {data.shiftId && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Shift ID:</span>
+                      <span className="font-semibold text-gray-800">{data.shiftId}</span>
+                    </div>
+                  )}
+                  {data.internalNotes && (
+                    <div className="mt-2 pt-2 border-t border-yellow-300">
+                      <p className="text-xs text-gray-700 italic">Note: {data.internalNotes}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Transaction Summary */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Transaction ID:</span>
+                  <span className="font-bold text-blue-800">{data.orderId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Cashier:</span>
+                  <span className="font-semibold text-blue-800">{data.cashierName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Generated:</span>
+                  <span className="font-semibold text-blue-800">{dateStr} {timeStr}</span>
+                </div>
+              </div>
             </div>
-            
-            {/* Merchant tax info removed */}
+
+            {/* For Internal Use Only */}
+            <div className="text-xs text-gray-500 space-y-1 border-t border-gray-200 pt-2">
+              <p className="font-bold text-gray-600">FOR INTERNAL USE ONLY</p>
+              <p>This receipt is for accounting and tracking purposes</p>
+              <p>Keep in secure location for audit purposes</p>
+            </div>
           </>
         )}
         

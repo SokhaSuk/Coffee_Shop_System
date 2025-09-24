@@ -17,7 +17,7 @@ export interface Order {
   items: OrderItem[]
   subtotal: number
   total: number
-  paymentMethod: "cash" | "card"
+  paymentMethod: "cash" | "card" | "digital"
   paidAmount?: number
   changeAmount?: number
   status: "pending" | "preparing" | "ready" | "completed" | "cancelled"
@@ -306,6 +306,8 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         createOrder,
         updateOrderStatus,
         cancelOrder,
+        getOrderById,
+        createAdjustment,
         getOrdersByStatus,
         getOrdersByDate,
         getTodaysOrders,

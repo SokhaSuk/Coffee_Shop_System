@@ -40,7 +40,7 @@ export interface Order extends BaseEntity {
   items: OrderItem[]
   subtotal: number
   total: number
-  paymentMethod: "cash" | "card"
+  paymentMethod: "cash" | "card" | "digital"
   paidAmount?: number
   changeAmount?: number
   status: "pending" | "preparing" | "ready" | "completed" | "cancelled"
