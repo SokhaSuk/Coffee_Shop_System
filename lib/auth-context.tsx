@@ -3,13 +3,17 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 
-export type UserRole = "admin" | "cashier"
+export type UserRole = "admin" | "cashier" | "manager"
 
 export interface User {
   id: string
   email: string
   name: string
   role: UserRole
+  isActive: boolean
+  lastLogin?: string
+  createdAt: string
+  updatedAt: string
 }
 
 interface AuthContextType {
@@ -32,12 +36,20 @@ const initialUsers: User[] = [
     email: "admin@darkcoffee.com",
     name: "Admin User",
     role: "admin",
+    isActive: true,
+    lastLogin: "2024-01-15T10:30:00Z",
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-15T10:30:00Z",
   },
   {
     id: "2",
     email: "cashier@darkcoffee.com",
     name: "Cashier User",
     role: "cashier",
+    isActive: true,
+    lastLogin: "2024-01-15T09:15:00Z",
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-15T09:15:00Z",
   },
 ]
 
@@ -86,10 +98,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  const addUser = (userData: Omit<User, "id">) => {
+  const addUser = (userData: Omit<User, "id" | "createdAt" | "updatedAt">) => {
     const newUser: User = {
       ...userData,
       id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
     setUsers((prev) => [...prev, newUser])
   }

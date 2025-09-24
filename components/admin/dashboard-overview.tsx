@@ -12,7 +12,7 @@ export function DashboardOverview() {
     const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0)
     const lowStockCount = products.filter(p => p.stock <= 10).length
     const outOfStockCount = products.filter(p => p.stock === 0).length
-    const availableProducts = products.filter(p => p.available).length
+    const availableProducts = products.filter(p => p.isAvailable).length
 
     return [
       {
@@ -71,7 +71,7 @@ export function DashboardOverview() {
         id: `#${product.id}`,
         name: product.name,
         stock: product.stock,
-        status: product.available ? "available" : "unavailable",
+        status: product.isAvailable ? "available" : "unavailable",
       }))
   }, [products])
 

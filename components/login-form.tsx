@@ -5,6 +5,7 @@ import { useState, useCallback } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -113,15 +114,14 @@ export function LoginForm() {
               <Label htmlFor="password" className="text-coffee-800">
                 Password
               </Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={password}
                 onChange={handlePasswordChange}
                 placeholder="Enter your password"
                 required
                 disabled={isFormDisabled}
-                className="border-coffee-200 focus:border-coffee-500 focus:ring-coffee-500"
+                className="border-coffee-200 focus:border-coffee-500 focus:ring-coffee-500 text-base sm:text-sm"
                 aria-describedby={error ? "error-message" : undefined}
               />
             </div>

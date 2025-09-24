@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useRef } from "react"
+import * as React from "react"
 import { useOrders, type Order, type DateFilterType } from "@/lib/order-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -55,6 +56,184 @@ export function OrderHistory() {
   const formatStatus = (status: Order["status"]) => {
     if (status === "cancelled") return "Cancelled"
     return status.charAt(0).toUpperCase() + status.slice(1)
+  }
+
+  const printReceipt = (order?: Order) => {
+    const targetOrder = order || selectedOrder
+    if (!targetOrder) {
+      toast({
+        title: "Error",
+        description: "Unable to print receipt. Order data not available.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      // Create a temporary print container with receipt HTML
+      const printContainer = document.createElement('div')
+      printContainer.id = 'receipt-print-container'
+      printContainer.style.position = 'fixed'
+      printContainer.style.left = '-9999px'
+      printContainer.style.top = '0'
+      printContainer.style.width = '400px'
+      printContainer.style.background = 'white'
+      printContainer.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", Courier, monospace'
+      printContainer.style.color = 'black'
+      printContainer.style.padding = '20px'
+      printContainer.style.boxSizing = 'border-box'
+
+      const receiptData: ReceiptData = {
+        title: "Receipt",
+        orderId: targetOrder.id,
+        customer: targetOrder.customer,
+        cashierName: "System",
+        items: targetOrder.items.map((item, idx) => ({
+          id: item.id || `item-${idx}`,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        subtotal: targetOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
+        total: targetOrder.total,
+        createdAt: targetOrder.createdAt,
+        paymentMethod: targetOrder.paymentMethod as "cash" | "card"
+      }
+
+      // Generate receipt HTML directly
+      const receiptHTML = `
+        <div class="receipt-container bg-white text-black font-mono text-sm leading-relaxed w-full max-w-md mx-auto break-words shadow-lg rounded-lg border">
+          <div class="receipt-header text-center mb-6 p-4">
+            <div class="mb-4">
+              <div class="flex items-center justify-center gap-3 mb-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-amber-600 to-amber-800 rounded-full flex items-center justify-center shadow-lg">
+                  <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h1 class="font-bold text-xl tracking-wide text-gray-800">DaCoffee Shop</h1>
+                  <div class="text-xs text-amber-600 font-semibold tracking-wider">Premium Coffee Experience</div>
+                </div>
+              </div>
+              <div class="bg-amber-50 px-4 py-2 rounded-full inline-block border border-amber-200">
+                <span class="text-sm uppercase tracking-wider text-amber-800 font-bold">CUSTOMER COPY</span>
+              </div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+              <div class="space-y-2">
+                <div class="flex items-center justify-center gap-2 text-xs text-gray-600">
+                  <span>#12 Street 123, Phnom Penh, Cambodia</span>
+                </div>
+                <div class="flex items-center justify-center gap-2 text-xs text-gray-600">
+                  <span>+855 12-345-678</span>
+                </div>
+                <div class="flex items-center justify-center gap-2 text-xs text-gray-600">
+                  <span>info@dacoffee.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="receipt-details bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 my-4">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700 font-medium">Receipt No:</span>
+                <span class="font-bold text-gray-800 bg-white px-3 py-1 rounded-lg border shadow-sm">${receiptData.orderId}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700 font-medium">Date & Time:</span>
+                <span class="font-semibold text-gray-800">${new Date(receiptData.createdAt).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-700 font-medium">Customer:</span>
+                <span class="font-semibold text-gray-800 capitalize">${receiptData.customer}</span>
+              </div>
+            </div>
+          </div>
+          <div class="receipt-items mb-6">
+            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-gray-800 flex items-center gap-2">Order Items</h3>
+                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  ${receiptData.items.length} item${receiptData.items.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div class="space-y-3">
+                ${receiptData.items.map(item => `
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex-1">
+                      <div class="font-medium text-gray-800">${item.name}</div>
+                      <div class="text-xs text-gray-600">$${item.price.toFixed(2)} each</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="text-center px-3 py-1 bg-white rounded border">
+                        <div class="text-sm font-bold">${item.quantity}x</div>
+                      </div>
+                      <div class="text-right">
+                        <div class="font-bold text-lg">$${(item.price * item.quantity).toFixed(2)}</div>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="receipt-totals bg-gradient-to-br from-gray-50 to-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center py-2">
+                <span class="text-gray-700 font-medium">Subtotal:</span>
+                <span class="font-semibold">$${receiptData.subtotal.toFixed(2)}</span>
+              </div>
+              <div class="border-t border-amber-200 pt-3 mt-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-lg font-bold text-gray-800">TOTAL:</span>
+                  <span class="text-2xl font-bold text-amber-600 bg-white px-4 py-2 rounded-lg shadow-sm">
+                    $${receiptData.total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-dotted border-gray-300">
+              <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-1">
+                  <span class="font-medium">Payment Method:</span>
+                </div>
+                <span class="capitalize font-semibold">${receiptData.paymentMethod}</span>
+              </div>
+            </div>
+          </div>
+          <div class="receipt-footer border-t border-dashed border-gray-400 pt-4 text-center">
+            <div class="mb-4">
+              <p class="text-base font-medium text-gray-800 mb-2">Thank you for visiting!</p>
+              <p class="text-xs text-gray-600 mb-1">We appreciate your business</p>
+              <p class="text-xs text-gray-600">Follow us: @DaCoffee | www.dacoffee.com</p>
+            </div>
+            <div class="text-xs text-gray-500 space-y-1">
+              <p>Customer Copy - Please keep your receipt</p>
+              <p>Receipt #${receiptData.orderId}</p>
+            </div>
+          </div>
+        </div>
+      `
+
+      printContainer.innerHTML = receiptHTML
+      document.body.appendChild(printContainer)
+
+      // Use browser's native print dialog
+      window.focus()
+      window.print()
+
+      // Clean up after printing
+      setTimeout(() => {
+        if (document.body.contains(printContainer)) {
+          document.body.removeChild(printContainer)
+        }
+      }, 1000)
+
+    } catch (error) {
+      console.error('Print failed:', error)
+      alert('Unable to print receipt. Please try again or check your browser settings.')
+    }
   }
 
   const handleDownloadReceipt = async (order?: Order) => {
@@ -134,7 +313,15 @@ export function OrderHistory() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Order History</h2>
         <div className="flex gap-2">
-          {/* Print functionality has been removed */}
+          <Button
+            variant="outline"
+            onClick={() => printReceipt()}
+            disabled={!selectedOrder || isDownloading}
+            className="bg-coffee-50 hover:bg-coffee-100 border-coffee-200"
+          >
+            <Receipt className="h-4 w-4 mr-2" />
+            Print Receipt
+          </Button>
         </div>
       </div>
 
@@ -199,6 +386,13 @@ export function OrderHistory() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              onClick={() => printReceipt(order)}
+                              className="flex items-center gap-2"
+                            >
+                              <Receipt className="h-4 w-4" />
+                              Print Receipt
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDownloadReceipt(order)}
                               disabled={isDownloading || downloadingOrderId === order.id}

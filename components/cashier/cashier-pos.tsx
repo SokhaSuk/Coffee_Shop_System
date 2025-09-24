@@ -108,8 +108,8 @@ export function CashierPOS() {
 
   const filteredProducts = useMemo(() => {
     const byCategory = selectedCategory === "All"
-      ? products.filter((p) => p.available)
-      : products.filter((p) => p.available && categories.find((c) => c.name === selectedCategory)?.id === p.category)
+      ? products.filter((p) => p.isAvailable)
+      : products.filter((p) => p.isAvailable && categories.find((c) => c.name === selectedCategory)?.id === p.category)
 
     if (selectedType === "All Types") return byCategory
     return byCategory.filter((p) => p.type === selectedType)
@@ -261,8 +261,8 @@ export function CashierPOS() {
     // Compute resulting list for feedback
     const categoryId = categories.find((c) => c.name === category)?.id
     const byCategory = category === "All"
-      ? products.filter((p) => p.available)
-      : products.filter((p) => p.available && p.category === categoryId)
+      ? products.filter((p) => p.isAvailable)
+      : products.filter((p) => p.isAvailable && p.category === categoryId)
     const next = selectedType === "All Types" ? byCategory : byCategory.filter((p) => p.type === selectedType)
     if (next.length === 0) {
       toast({ title: "No items found", description: `No products for ${category} ${selectedType !== "All Types" ? `and ${selectedType}` : ""}.`, variant: "destructive" })
@@ -276,8 +276,8 @@ export function CashierPOS() {
     // Compute resulting list for feedback
     const categoryId = categories.find((c) => c.name === selectedCategory)?.id
     const byCategory = selectedCategory === "All"
-      ? products.filter((p) => p.available)
-      : products.filter((p) => p.available && p.category === categoryId)
+      ? products.filter((p) => p.isAvailable)
+      : products.filter((p) => p.isAvailable && p.category === categoryId)
     const next = type === "All Types" ? byCategory : byCategory.filter((p) => p.type === type)
     if (next.length === 0) {
       toast({ title: "No items found", description: `No products for ${selectedCategory} ${type !== "All Types" ? `and ${type}` : ""}.`, variant: "destructive" })
@@ -295,57 +295,83 @@ export function CashierPOS() {
   }, [])
 
   const printHtml = useCallback((title: string, bodyHtml: string) => {
-    const printWindow = window.open("", "_blank", "noopener,noreferrer")
-    if (!printWindow) return
-    printWindow.document.open()
-    printWindow.document.write(`<!DOCTYPE html><html><head><meta charset=\"utf-8\" />
-      <title>${title}</title>
-      <style>
-        *{box-sizing:border-box} body{margin:16px;font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, \"Apple Color Emoji\", \"Segoe UI Emoji\"; color:#111}
-        .container{max-width:800px;margin:0 auto}
-        .muted{color:#6b7280}
-        .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,\"Liberation Mono\",Courier,monospace}
-        .row{display:flex;justify-content:space-between;align-items:center}
-        .divider{border-top:1px dashed #cbd5e1;margin:12px 0}
-        .title{font-size:20px;font-weight:700}
-        .subtitle{font-size:12px}
-        table{width:100%;border-collapse:collapse}
-        th,td{padding:6px 0;text-align:left}
-        th{font-size:12px;color:#6b7280;border-bottom:1px solid #e5e7eb}
-        .total{font-weight:700;font-size:16px}
-        @page{margin:12mm}
-      </style>
-    </head><body><div class=\"container\">${bodyHtml}</div></body></html>`)
-    printWindow.document.close()
-    printWindow.focus()
-    printWindow.print()
+    try {
+      // Create a temporary print container
+      const printContainer = document.createElement('div')
+      printContainer.id = 'print-container'
+      printContainer.style.position = 'fixed'
+      printContainer.style.left = '-9999px'
+      printContainer.style.top = '0'
+      printContainer.style.width = '800px'
+      printContainer.style.background = 'white'
+      printContainer.style.fontFamily = 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji"'
+      printContainer.style.color = '#111'
+      printContainer.style.padding = '20px'
+      printContainer.style.boxSizing = 'border-box'
+
+      printContainer.innerHTML = `
+        <style>
+          .print-content { max-width: 800px; margin: 0 auto; }
+          .print-muted { color: #6b7280; }
+          .print-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", Courier, monospace; }
+          .print-row { display: flex; justify-content: space-between; align-items: center; }
+          .print-divider { border-top: 1px dashed #cbd5e1; margin: 12px 0; }
+          .print-title { font-size: 20px; font-weight: 700; }
+          .print-subtitle { font-size: 12px; }
+          .print-table { width: 100%; border-collapse: collapse; }
+          .print-th, .print-td { padding: 6px 0; text-align: left; }
+          .print-th { font-size: 12px; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
+          .print-total { font-weight: 700; font-size: 16px; }
+          @media print {
+            body { margin: 0; }
+            .print-content { margin: 12mm; }
+          }
+        </style>
+        <div class="print-content">${bodyHtml}</div>
+      `
+
+      document.body.appendChild(printContainer)
+
+      // Use browser's native print dialog
+      window.focus()
+      window.print()
+
+      // Clean up after printing
+      setTimeout(() => {
+        document.body.removeChild(printContainer)
+      }, 1000)
+
+    } catch (error) {
+      console.error('Print failed:', error)
+      alert('Unable to print. Please try again or check your browser settings.')
+    }
   }, [])
 
   const printOrderReport = useCallback(() => {
     if (!receiptData) return
     const itemsRows = receiptData.items
       .map(
-        (it) => `<tr><td>${it.name}</td><td class=\"mono\">${it.quantity}x</td><td class=\"mono\" style=\"text-align:right\">$${(it.price * it.quantity).toFixed(2)}</td></tr>`,
+        (it) => `<tr><td class="print-td">${it.name}</td><td class="print-mono">${it.quantity}x</td><td class="print-mono" style="text-align:right">$${(it.price * it.quantity).toFixed(2)}</td></tr>`,
       )
       .join("")
     const discountRow = typeof receiptData.discountAmount === "number" && receiptData.discountAmount > 0
-      ? `<div class=\"row\"><div class=\"muted\">Discount${receiptData.discountLabel ? ` (${receiptData.discountLabel})` : ""}</div><div class=\"mono\">-$${receiptData.discountAmount.toFixed(2)}</div></div>`
+      ? `<div class=\"print-row\"><div class=\"print-muted\">Discount${receiptData.discountLabel ? ` (${receiptData.discountLabel})` : ""}</div><div class=\"print-mono\">-$${receiptData.discountAmount.toFixed(2)}</div></div>`
       : ""
     const body = `
-      <div class=\"row\"><div class=\"title\">Order Report</div><div class=\"mono\">${receiptData.orderId}</div></div>
-      <div class=\"subtitle muted\">${new Date(receiptData.createdAt).toLocaleString()}</div>
-      <div class=\"subtitle\">Customer: ${receiptData.customer} • Cashier: ${receiptData.cashierName}</div>
-      <div class=\"divider\"></div>
-      <table>
-        <thead><tr><th>Item</th><th>Qty</th><th style=\"text-align:right\">Amount</th></tr></thead>
+      <div class="print-row"><div class="print-title">Order Report</div><div class="print-mono">${receiptData.orderId}</div></div>
+      <div class="print-subtitle print-muted">${new Date(receiptData.createdAt).toLocaleString()}</div>
+      <div class="print-subtitle">Customer: ${receiptData.customer} • Cashier: ${receiptData.cashierName}</div>
+      <div class="print-divider"></div>
+      <table class="print-table">
+        <thead><tr><th class="print-th">Item</th><th class="print-th">Qty</th><th class="print-th" style="text-align:right">Amount</th></tr></thead>
         <tbody>${itemsRows}</tbody>
       </table>
-      <div class=\"divider\"></div>
-      <div class=\"row\"><div class=\"muted\">Subtotal</div><div class=\"mono\">$${receiptData.subtotal.toFixed(2)}</div></div>
+      <div class="print-divider"></div>
+      <div class="print-row"><div class="print-muted">Subtotal</div><div class="print-mono">$${receiptData.subtotal.toFixed(2)}</div></div>
       ${discountRow}
-      <div class=\"row total\"><div>Total</div><div class=\"mono\">$${receiptData.total.toFixed(2)}</div></div>
-      <div class=\"divider\"></div>
-      <div class=\"subtitle muted\">Payment: ${receiptData.paymentMethod || "n/a"}</div>
+      <div class="print-row print-total"><div>Total</div><div class="print-mono">$${receiptData.total.toFixed(2)}</div></div>
+      <div class="print-divider"></div>
+      <div class="print-subtitle print-muted">Payment: ${receiptData.paymentMethod || "n/a"}</div>
     `
     printHtml("Order Report", body)
   }, [receiptData, printHtml])
@@ -494,9 +520,9 @@ export function CashierPOS() {
   }, [receiptData, isDownloading, toast, downloadMerchantReceiptPdf, downloadCustomerReceiptPdf])
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 h-full">
       {/* Products Section */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className="lg:col-span-2 space-y-3 sm:space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className="text-2xl font-bold text-coffee-900">Products</h2>
           {/* Mobile category dropdown */}
@@ -568,20 +594,20 @@ export function CashierPOS() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
           {filteredProducts.map((product) => {
             const discountedPrice = getDiscountedPrice(product)
             const hasDiscount = discountedPrice < product.price && isDiscountActive(product)
-            const lowStock = product.available && product.stock <= 5
+            const lowStock = product.isAvailable && product.stock <= 5
 
             return (
               <Card
                 key={product.id}
-                className={`group relative cursor-pointer overflow-hidden transition-all border border-coffee-200 hover:shadow-md sm:hover:shadow-lg hover:-translate-y-0.5 focus-within:ring-1 focus-within:ring-ring/30 ${
-                  !product.available ? "opacity-60" : "hover:border-coffee-400"
+                className={`group relative cursor-pointer overflow-hidden transition-all border border-coffee-200 hover:shadow-md sm:hover:shadow-lg hover:-translate-y-0.5 focus-within:ring-1 focus-within:ring-ring/30 p-2 sm:p-3 lg:p-4 ${
+                  !product.isAvailable ? "opacity-60" : "hover:border-coffee-400"
                 }`}
                 onClick={() => {
-                  if (!product.available) return
+                  if (!product.isAvailable) return
                   if (product.category === "coffee") {
                     setPendingProduct(product)
                     setSelectedSugar("50")
@@ -595,7 +621,7 @@ export function CashierPOS() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault()
-                    if (product.available) {
+                    if (product.isAvailable) {
                       if (product.category === "coffee") {
                         setPendingProduct(product)
                         setSelectedSugar("50")
@@ -607,21 +633,22 @@ export function CashierPOS() {
                   }
                 }}
                 aria-label={`Add ${product.name} to cart`}
-                aria-disabled={!product.available}
+                aria-disabled={!product.isAvailable}
               >
                 <div className="p-0">
                   <div className="relative">
-                    <AspectRatio ratio={4 / 3}>
+                    {/* Responsive aspect ratio - smaller on mobile, larger on desktop */}
+                    <div className="aspect-square sm:aspect-[4/3] lg:aspect-[4/3]">
                       <Image
-                        src={product.image || "/placeholder.svg"}
+                        src={product.imageUrl || "/placeholder.svg"}
                         alt={product.name}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         loading="lazy"
-                        placeholder={product.image ? undefined : "empty"}
+                        placeholder={product.imageUrl ? undefined : "empty"}
                       />
-                    </AspectRatio>
+                    </div>
 
                     {/* Overlays */}
                     {hasDiscount && (
@@ -634,7 +661,7 @@ export function CashierPOS() {
                         Low stock
                       </div>
                     )}
-                    {!product.available && (
+                    {!product.isAvailable && (
                       <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] grid place-items-center text-white text-xs">
                         Out of stock
                       </div>
@@ -662,22 +689,22 @@ export function CashierPOS() {
                     </div>
 
                     <div>
-                      <p className="text-sm sm:text-base font-semibold text-coffee-900 truncate">{product.name}</p>
-                      <p className="text-xs sm:text-sm text-coffee-600 leading-tight line-clamp-1">{product.description}</p>
+                      <p className="text-xs sm:text-sm lg:text-base font-semibold text-coffee-900 truncate">{product.name}</p>
+                      <p className="text-[10px] sm:text-xs lg:text-sm text-coffee-600 leading-tight line-clamp-1">{product.description}</p>
                     </div>
 
                     <div className="flex items-end justify-between pt-0.5 sm:pt-1">
                       <div className="flex flex-col leading-tight">
                         {hasDiscount ? (
                           <>
-                            <span className="text-lg sm:text-xl font-bold text-coffee-900">${discountedPrice.toFixed(2)}</span>
-                            <span className="text-[10px] sm:text-xs text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                            <span className="text-sm sm:text-lg lg:text-xl font-bold text-coffee-900">${discountedPrice.toFixed(2)}</span>
+                            <span className="text-[10px] sm:text-[10px] lg:text-xs text-gray-500 line-through">${product.price.toFixed(2)}</span>
                           </>
                         ) : (
-                          <span className="text-lg sm:text-xl font-bold text-coffee-900">${product.price.toFixed(2)}</span>
+                          <span className="text-sm sm:text-lg lg:text-xl font-bold text-coffee-900">${product.price.toFixed(2)}</span>
                         )}
                       </div>
-                      {product.available ? (
+                      {product.isAvailable ? (
                         <div className="text-xs text-coffee-600">Tap card to add</div>
                       ) : (
                         <Badge variant="destructive">Unavailable</Badge>
@@ -692,15 +719,15 @@ export function CashierPOS() {
       </div>
 
       {/* Cart Section */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <Card className="h-fit border-coffee-200">
-          <CardHeader className="bg-coffee-50">
-            <CardTitle className="flex items-center gap-2 text-coffee-900">
-              <ShoppingCart className="h-5 w-5" />
-              Current Order
+          <CardHeader className="bg-coffee-50 p-3 sm:p-4 lg:p-6">
+            <CardTitle className="flex items-center gap-2 text-coffee-900 text-base sm:text-lg">
+              <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Current Order</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4 lg:p-6">
             {/* Customer Name */}
             <div className="space-y-2">
               <Label htmlFor="customer" className="text-coffee-800">
@@ -718,11 +745,11 @@ export function CashierPOS() {
             <Separator className="bg-coffee-200" />
 
             {/* Cart Items */}
-            <div className="space-y-3 max-h-64 overflow-y-auto">
+            <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-64 lg:max-h-80 overflow-y-auto">
               {cart.length === 0 ? (
-                <div className="text-center py-8">
-                  <ShoppingCart className="h-12 w-12 text-coffee-300 mx-auto mb-2" />
-                  <p className="text-coffee-500">No items in cart</p>
+                <div className="text-center py-6 sm:py-8">
+                  <ShoppingCart className="h-8 w-8 sm:h-12 sm:w-12 text-coffee-300 mx-auto mb-2" />
+                  <p className="text-coffee-500 text-sm sm:text-base">No items in cart</p>
                 </div>
               ) : (
                 cart.map((item) => {
@@ -735,30 +762,30 @@ export function CashierPOS() {
                       className="flex items-center justify-between p-3 border border-coffee-200 rounded-lg"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        {item.image && (
-                          <div className="relative w-12 h-12 rounded overflow-hidden bg-coffee-50 flex-shrink-0">
+                        {item.imageUrl && (
+                          <div className="relative w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded overflow-hidden bg-coffee-50 flex-shrink-0">
                             <Image
-                              src={item.image || "/placeholder.svg"}
+                              src={item.imageUrl || "/placeholder.svg"}
                               alt={item.name}
                               fill
                               className="object-cover"
-                              sizes="48px"
+                              sizes="(max-width: 640px) 32px, (max-width: 1024px) 40px, 48px"
                             />
                           </div>
                         )}
                         <div className="flex-1">
-                          <p className="font-medium text-sm text-coffee-900">{item.name}</p>
+                          <p className="font-medium text-xs sm:text-sm text-coffee-900 truncate">{item.name}</p>
                           {item.sugarLevel && (
-                            <p className="text-[11px] text-coffee-600">Sugar: {item.sugarLevel}</p>
+                            <p className="text-[10px] sm:text-[11px] text-coffee-600 truncate">Sugar: {item.sugarLevel}</p>
                           )}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 sm:gap-2">
                             {hasDiscount ? (
                               <>
-                                <p className="text-xs text-coffee-600">${discountedPrice.toFixed(2)} each</p>
-                                <p className="text-xs text-gray-500 line-through">${item.price.toFixed(2)}</p>
+                                <p className="text-[10px] sm:text-xs text-coffee-600">${discountedPrice.toFixed(2)} each</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500 line-through">${item.price.toFixed(2)}</p>
                               </>
                             ) : (
-                              <p className="text-xs text-coffee-600">${item.price.toFixed(2)} each</p>
+                              <p className="text-[10px] sm:text-xs text-coffee-600">${item.price.toFixed(2)} each</p>
                             )}
                           </div>
                         </div>
@@ -775,7 +802,7 @@ export function CashierPOS() {
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
-                        <span className="w-8 text-center text-sm font-medium text-coffee-900">{item.quantity}</span>
+                        <span className="w-6 sm:w-8 text-center text-xs sm:text-sm font-medium text-coffee-900">{item.quantity}</span>
                         <Button
                           size="sm"
                           variant="outline"

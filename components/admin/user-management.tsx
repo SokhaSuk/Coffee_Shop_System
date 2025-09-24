@@ -23,6 +23,9 @@ export function UserManagement() {
     name: "",
     email: "",
     role: "cashier" as UserRole,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   })
 
   const validateForm = useCallback(() => {
@@ -75,7 +78,14 @@ export function UserManagement() {
           setIsAddingUser(false)
         }
 
-        setFormData({ name: "", email: "", role: "cashier" })
+        setFormData({
+          name: "",
+          email: "",
+          role: "cashier" as UserRole,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
         setFormErrors({})
       } catch (error) {
         toast({
@@ -94,6 +104,9 @@ export function UserManagement() {
       name: user.name,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     })
     setFormErrors({})
     setIsAddingUser(true)
@@ -123,7 +136,14 @@ export function UserManagement() {
   const handleCancel = useCallback(() => {
     setIsAddingUser(false)
     setEditingUser(null)
-    setFormData({ name: "", email: "", role: "cashier" })
+    setFormData({
+      name: "",
+      email: "",
+      role: "cashier" as UserRole,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
     setFormErrors({})
   }, [])
 

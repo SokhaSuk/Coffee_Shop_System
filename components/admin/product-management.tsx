@@ -16,7 +16,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Plus, Edit, Trash2, Package, Search, Filter, AlertTriangle, TrendingUp, Coffee, IceCream, Flame } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { DataTable, TableColumn } from "@/components/ui/data-table"
+import { DataTable } from "@/components/ui/data-table"
+import { TableColumn } from "@/lib/types"
 
 export function ProductManagement() {
   const {
@@ -48,11 +49,13 @@ export function ProductManagement() {
     name: "",
     description: "",
     price: "",
+    cost: "",
     category: "",
     stock: "",
-    available: true,
+    isAvailable: true,
     type: "Hot" as "Hot" | "Ice" | "Frab",
-    image: "",
+    imageUrl: "",
+    sku: "",
   })
 
   // Category form state
@@ -163,7 +166,7 @@ export function ProductManagement() {
       )
     },
     {
-      key: "available",
+      key: "isAvailable",
       label: "Status",
       render: (value) => (
         <Badge variant={value ? "default" : "secondary"}>
@@ -182,11 +185,13 @@ export function ProductManagement() {
         name: productForm.name,
         description: productForm.description,
         price: Number.parseFloat(productForm.price),
+        cost: Number.parseFloat(productForm.cost || "0"),
         category: productForm.category,
         stock: Number.parseInt(productForm.stock),
-        available: productForm.available,
+        isAvailable: productForm.isAvailable,
         type: productForm.type,
-        image: productForm.image || undefined,
+        imageUrl: productForm.imageUrl || undefined,
+        sku: productForm.sku,
       }
 
       try {
@@ -209,11 +214,13 @@ export function ProductManagement() {
           name: "",
           description: "",
           price: "",
+          cost: "",
           category: "",
           stock: "",
-          available: true,
+          isAvailable: true,
           type: "Hot",
-          image: "",
+          imageUrl: "",
+          sku: "",
         })
         setIsProductDialogOpen(false)
       } catch (error) {
@@ -310,11 +317,13 @@ export function ProductManagement() {
       name: product.name,
       description: product.description,
       price: product.price.toString(),
+      cost: product.cost.toString(),
       category: product.category,
       stock: product.stock.toString(),
-      available: product.available,
+      isAvailable: product.isAvailable,
       type: product.type || "Hot",
-      image: product.image || "",
+      imageUrl: product.imageUrl || "",
+      sku: product.sku,
     })
     setIsProductDialogOpen(true)
   }, [])
@@ -339,11 +348,13 @@ export function ProductManagement() {
       name: "",
       description: "",
       price: "",
+      cost: "",
       category: "",
       stock: "",
-      available: true,
+      isAvailable: true,
       type: "Hot",
-      image: "",
+      imageUrl: "",
+      sku: "",
     })
     setCategoryForm({ name: "", description: "" })
   }, [])
@@ -439,6 +450,17 @@ export function ProductManagement() {
                       placeholder="0.00"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="product-cost">Cost *</Label>
+                    <Input
+                      id="product-cost"
+                      type="number"
+                      step="0.01"
+                      value={productForm.cost}
+                      onChange={(e) => setProductForm(prev => ({ ...prev, cost: e.target.value }))}
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -503,11 +525,22 @@ export function ProductManagement() {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="product-sku">SKU *</Label>
+                    <Input
+                      id="product-sku"
+                      value={productForm.sku}
+                      onChange={(e) => setProductForm(prev => ({ ...prev, sku: e.target.value }))}
+                      placeholder="PROD001"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
                     <Label htmlFor="product-image">Image URL</Label>
                     <Input
                       id="product-image"
-                      value={productForm.image}
-                      onChange={(e) => setProductForm(prev => ({ ...prev, image: e.target.value }))}
+                      value={productForm.imageUrl}
+                      onChange={(e) => setProductForm(prev => ({ ...prev, imageUrl: e.target.value }))}
                       placeholder="https://example.com/image.jpg"
                     />
                   </div>
@@ -516,8 +549,8 @@ export function ProductManagement() {
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="product-available"
-                    checked={productForm.available}
-                    onCheckedChange={(checked) => setProductForm(prev => ({ ...prev, available: checked }))}
+                    checked={productForm.isAvailable}
+                    onCheckedChange={(checked) => setProductForm(prev => ({ ...prev, isAvailable: checked }))}
                   />
                   <Label htmlFor="product-available">Available for purchase</Label>
                 </div>

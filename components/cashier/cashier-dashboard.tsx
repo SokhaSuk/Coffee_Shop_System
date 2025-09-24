@@ -32,7 +32,7 @@ function CashierDashboardContent() {
               </Badge>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[
                 { name: "Espresso", price: 3.50, description: "Rich and bold espresso", icon: "☕" },
                 { name: "Latte", price: 4.75, description: "Smooth espresso with milk", icon: "🥛" },
@@ -41,22 +41,22 @@ function CashierDashboardContent() {
                 { name: "Mocha", price: 5.00, description: "Chocolate and espresso blend", icon: "🍫" },
                 { name: "Macchiato", price: 4.00, description: "Espresso marked with milk", icon: "🎯" }
               ].map((product) => (
-                <Card key={product.name} className="surface-elevated hover:shadow-lg transition-all duration-300 group">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-3 text-lg">
-                      <div className="text-2xl group-hover:scale-110 transition-transform">
+                <Card key={product.name} className="surface-elevated hover:shadow-lg transition-all duration-300 group p-3 sm:p-4">
+                  <CardHeader className="pb-2 sm:pb-3 p-0">
+                    <CardTitle className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg">
+                      <div className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">
                         {product.icon}
                       </div>
                       <div className="flex-1">
-                        <div className="font-bold">{product.name}</div>
-                        <div className="text-sm text-muted-foreground">{product.description}</div>
+                        <div className="font-bold text-sm sm:text-base">{product.name}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">{product.description}</div>
                       </div>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-0 pt-2 sm:pt-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xl font-bold text-primary">${product.price.toFixed(2)}</span>
-                      <Badge variant="default" className="bg-green-100 text-green-800">
+                      <span className="text-lg sm:text-xl font-bold text-primary">${product.price.toFixed(2)}</span>
+                      <Badge variant="default" className="bg-green-100 text-green-800 text-xs sm:text-sm">
                         In Stock
                       </Badge>
                     </div>
@@ -75,21 +75,21 @@ function CashierDashboardContent() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card/90 backdrop-blur-md sticky top-0 z-20 shadow-[var(--surface-elevation-1)]">
-        <div className="w-full px-3 sm:px-4 py-3 sm:py-4">
+        <div className="w-full px-2 sm:px-4 py-2 sm:py-4">
           {/* Top row: Title and Logout */}
-          <div className="flex items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="coffee-gradient rounded-full p-3 shadow-[var(--surface-elevation-1)] interactive-scale">
-                <Coffee className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+              <div className="coffee-gradient rounded-full p-2 sm:p-3 shadow-[var(--surface-elevation-1)] interactive-scale flex-shrink-0">
+                <Coffee className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gradient tracking-tight">DARK COFFEE</h1>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gradient tracking-tight truncate">DARK COFFEE</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium">Cashier System</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="text-right hidden sm:block">
-                <p className="font-semibold text-card-foreground">{user?.name}</p>
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <div className="text-right hidden md:block">
+                <p className="font-semibold text-card-foreground text-sm">{user?.name}</p>
                 <p className="text-xs text-muted-foreground capitalize font-medium">{user?.role}</p>
               </div>
               <Button
@@ -98,29 +98,50 @@ function CashierDashboardContent() {
                 onClick={async () => {
                   await logoutWithConfirmation()
                 }}
-                className="bg-background/80 hover:bg-destructive hover:text-destructive-foreground"
+                className="bg-background/80 hover:bg-destructive hover:text-destructive-foreground px-2 sm:px-3"
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Logout</span>
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline ml-1">Logout</span>
               </Button>
             </div>
           </div>
 
           {/* Second row: Navigation tabs */}
-          <div className="mt-3">
+          <div className="mt-2 sm:mt-3">
             <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="pos" className="flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4" />
-                  <span className="hidden sm:inline">POS</span>
+              <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-lg shadow-inner h-auto">
+                <TabsTrigger
+                  value="pos"
+                  className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-2 transition-all duration-200 ${
+                    activeSection === "pos"
+                      ? "bg-primary text-primary-foreground shadow-md font-semibold"
+                      : "hover:bg-background/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  }`}
+                >
+                  <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">POS</span>
                 </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-2">
-                  <History className="h-4 w-4" />
-                  <span className="hidden sm:inline">History</span>
+                <TabsTrigger
+                  value="history"
+                  className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-2 transition-all duration-200 ${
+                    activeSection === "history"
+                      ? "bg-primary text-primary-foreground shadow-md font-semibold"
+                      : "hover:bg-background/80"
+                  }`}
+                >
+                  <History className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">History</span>
                 </TabsTrigger>
-                <TabsTrigger value="products" className="flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  <span className="hidden sm:inline">Products</span>
+                <TabsTrigger
+                  value="products"
+                  className={`flex items-center gap-1 sm:gap-2 rounded-md px-2 sm:px-3 py-2 transition-all duration-200 ${
+                    activeSection === "products"
+                      ? "bg-primary text-primary-foreground shadow-md font-semibold"
+                      : "hover:bg-background/80"
+                  }`}
+                >
+                  <Package className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">Products</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -131,8 +152,8 @@ function CashierDashboardContent() {
       {/* Dashboard Overview - Only show when on POS tab */}
       {activeSection === "pos" && (
         <div className="bg-muted/30 border-b">
-          <div className="container mx-auto px-3 sm:px-4 py-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               <DashboardCard
                 title="Today's Orders"
                 value="47"
@@ -163,7 +184,7 @@ function CashierDashboardContent() {
       )}
 
       {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 min-h-[calc(100vh-200px)]">
         {renderContent()}
       </main>
     </div>
