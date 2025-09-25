@@ -17,8 +17,8 @@ export async function downloadElementAsPdf(
   const {
     orientation = "p",
     format = "a4",
-    marginMm = 10,
-    scale = 2
+    marginMm = 8,
+    scale = 3
   } = options
 
   // Validate input parameters
@@ -69,7 +69,7 @@ export async function downloadElementAsPdf(
     `
     clonedElement.appendChild(style)
 
-    // Capture the element as canvas with improved options
+    // Capture the element as canvas with improved options for better quality
     const canvas = await html2canvas(clonedElement, {
       scale,
       useCORS: true,
@@ -78,8 +78,10 @@ export async function downloadElementAsPdf(
       logging: false, // Disable html2canvas console logs
       width: clonedElement.scrollWidth,
       height: clonedElement.scrollHeight,
-      removeContainer: true,
-      foreignObjectRendering: false // Disable foreign object rendering to avoid CSS issues
+      foreignObjectRendering: false, // Disable foreign object rendering to avoid CSS issues
+      letterRendering: true, // Better text rendering
+      imageTimeout: 15000, // Increase timeout for better image loading
+      removeContainer: true
     })
 
     // Clean up the cloned element if it was added to DOM
@@ -126,9 +128,9 @@ export async function downloadElementAsPdf(
       throw new Error("Failed to generate image data from canvas")
     }
 
-    // Add image to PDF with error handling
+    // Add image to PDF with error handling and better quality
     try {
-      pdf.addImage(imgData, "PNG", x, y, scaledWidth, scaledHeight)
+      pdf.addImage(imgData, "PNG", x, y, scaledWidth, scaledHeight, undefined, "FAST")
     } catch (imageError) {
       console.error("Error adding image to PDF:", imageError)
       throw new Error("Failed to add image to PDF document")
@@ -171,7 +173,8 @@ export async function createSimpleReceiptPdf(
       orientation: "p",
       unit: "mm",
       format: "a4",
-      compress: true
+      compress: true,
+      putOnlyUsedFonts: true
     })
 
     const pageWidth = pdf.internal.pageSize.getWidth()
@@ -183,12 +186,12 @@ export async function createSimpleReceiptPdf(
     pdf.setFont("helvetica", "normal")
 
     // Header - differentiate between merchant and customer copy
-    pdf.setFontSize(20)
+    pdf.setFontSize(24)
     pdf.setFont("helvetica", "bold")
     pdf.text("DaCoffee Shop", pageWidth / 2, yPosition, { align: "center" })
 
-    yPosition += 10
-    pdf.setFontSize(12)
+    yPosition += 12
+    pdf.setFontSize(14)
     pdf.setFont("helvetica", "normal")
 
     // Check if this is a merchant or customer copy based on filename
@@ -209,42 +212,44 @@ export async function createSimpleReceiptPdf(
     yPosition += 5
     pdf.text("info@dacoffee.com", pageWidth / 2, yPosition, { align: "center" })
 
-    yPosition += 15
-    pdf.setFontSize(12)
+    yPosition += 20
+    pdf.setFontSize(14)
     pdf.setFont("helvetica", "bold")
 
     // Order details
     pdf.text(`Receipt No: ${order.id}`, margin, yPosition)
-    yPosition += 8
+    yPosition += 10
     pdf.text(`Customer: ${order.customer}`, margin, yPosition)
-    yPosition += 8
+    yPosition += 10
     pdf.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, margin, yPosition)
-    yPosition += 8
+    yPosition += 10
     pdf.text(`Time: ${new Date(order.createdAt).toLocaleTimeString()}`, margin, yPosition)
-    yPosition += 8
+    yPosition += 10
     pdf.text(`Payment: ${order.paymentMethod}`, margin, yPosition)
 
-    yPosition += 15
+    yPosition += 20
 
     // Items header
-    pdf.setFontSize(10)
+    pdf.setFontSize(12)
     pdf.setFont("helvetica", "bold")
     pdf.text("Item", margin, yPosition)
     pdf.text("Qty", pageWidth - 60, yPosition)
     pdf.text("Price", pageWidth - 30, yPosition)
-    yPosition += 8
+    yPosition += 10
 
     pdf.setFont("helvetica", "normal")
+    pdf.setFontSize(11)
     order.items.forEach((item) => {
       const lineTotal = item.quantity * item.price
       pdf.text(item.name, margin, yPosition)
       pdf.text(item.quantity.toString(), pageWidth - 60, yPosition)
       pdf.text(`$${lineTotal.toFixed(2)}`, pageWidth - 30, yPosition)
-      yPosition += 6
+      yPosition += 8
     })
 
-    yPosition += 10
+    yPosition += 15
     pdf.setFont("helvetica", "bold")
+    pdf.setFontSize(16)
     pdf.text("TOTAL:", margin, yPosition)
     pdf.text(`$${order.total.toFixed(2)}`, pageWidth - 30, yPosition)
 

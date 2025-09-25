@@ -465,7 +465,7 @@ export function CashierPOS() {
       await downloadPdfFromRef(
         orderReportRef,
         `order-${receiptData?.orderId || "report"}.pdf`,
-        { orientation: "p", format: "a4", marginMm: 10, scale: 2 },
+        { orientation: "p", format: "a4", marginMm: 8, scale: 3 },
         "Order report PDF saved.",
       )
     } finally {
@@ -480,7 +480,7 @@ export function CashierPOS() {
       await downloadPdfFromRef(
         customerReceiptRef,
         `customer-${receiptData?.orderId || "receipt"}.pdf`,
-        { orientation: "p", format: "a4", marginMm: 10, scale: 2 },
+        { orientation: "p", format: "a4", marginMm: 8, scale: 3 },
         "Customer receipt PDF saved.",
       )
     } finally {
@@ -495,7 +495,7 @@ export function CashierPOS() {
       await downloadPdfFromRef(
         merchantReceiptRef,
         `merchant-${receiptData?.orderId || "receipt"}.pdf`,
-        { orientation: "p", format: "a4", marginMm: 10, scale: 2 },
+        { orientation: "p", format: "a4", marginMm: 8, scale: 3 },
         "Merchant receipt PDF saved.",
       )
     } finally {
@@ -985,12 +985,12 @@ export function CashierPOS() {
 
       {/* Receipt Dialog */}
       <Dialog open={isReceiptOpen} onOpenChange={setIsReceiptOpen}>
-        <DialogContent className="w-[95vw] max-w-3xl md:w-auto md:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-md md:w-auto md:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Receipt</DialogTitle>
-            <DialogDescription>Merchant and Customer copies</DialogDescription>
+            <DialogDescription>Order receipt</DialogDescription>
           </DialogHeader>
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 flex-wrap">
             <Button
               variant="outline"
               onClick={() => setIsReceiptOpen(false)}
@@ -998,12 +998,12 @@ export function CashierPOS() {
               Close
             </Button>
             <Button variant="outline" onClick={printOrderReport}>Print Report</Button>
-            <Button onClick={printWaitingTicket} className="bg-coffee-600 hover:bg-coffee-700 text-white">Print Waiting Ticket</Button>
+            <Button onClick={printWaitingTicket} className="bg-gray-600 hover:bg-gray-700 text-white">Print Waiting Ticket</Button>
             <Button
               variant="outline"
               onClick={downloadBothReceipts}
               disabled={isDownloading !== null}
-              className="bg-amber-600 hover:bg-amber-700 text-white border-amber-600"
+              className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
             >
               {isDownloading === "both" ? (
                 <>
@@ -1019,9 +1019,22 @@ export function CashierPOS() {
             </Button>
           </div>
           {receiptData && (
-            <div className="space-y-4">
-              <ReceiptCard data={{ ...receiptData, title: "Merchant Copy" }} variant="merchant" />
-              <ReceiptCard data={{ ...receiptData, title: "Customer Copy" }} variant="customer" />
+            <div className="space-y-6">
+              {/* Main simple receipt for display */}
+              <ReceiptCard
+                data={{
+                  title: "Receipt",
+                  orderId: receiptData.orderId || "",
+                  customer: receiptData.customer,
+                  cashierName: receiptData.cashierName,
+                  items: receiptData.items,
+                  subtotal: receiptData.subtotal,
+                  total: receiptData.total,
+                  createdAt: receiptData.createdAt,
+                  paymentMethod: receiptData.paymentMethod as "cash" | "card" | "digital",
+                }}
+                variant="simple"
+              />
 
               {/* Off-screen areas for PDF export (must be rendered for html2canvas) */}
               <div style={{ position: "absolute", left: -99999, top: 0 }} aria-hidden>
@@ -1039,171 +1052,131 @@ export function CashierPOS() {
                     paymentMethod={receiptData.paymentMethod}
                   />
                 </div>
-                 <div ref={waitingRef}>
-                   <WaitingTicket orderId={receiptData.orderId || ""} createdAt={receiptData.createdAt} />
-                 </div>
-                 <div ref={customerReceiptRef}>
-                   <ReceiptCard
-                     data={{
-                       title: "Customer Receipt",
-                       orderId: receiptData.orderId || "",
-                       customer: receiptData.customer,
-                       cashierName: receiptData.cashierName,
-                       items: receiptData.items,
-                       subtotal: receiptData.subtotal,
-                       discountLabel: receiptData.discountLabel,
-                       discountAmount: receiptData.discountAmount,
-                       total: receiptData.total,
-                       createdAt: receiptData.createdAt,
-                       paymentMethod: receiptData.paymentMethod as "cash" | "card" | "digital",
-                       paidAmount: receiptData.paidAmount,
-                       changeAmount: receiptData.changeAmount
-                     }}
-                     variant="customer"
-                   />
-                 </div>
-                 <div ref={merchantReceiptRef}>
-                   <ReceiptCard
-                     data={{
-                       title: "Merchant Copy",
-                       orderId: receiptData.orderId || "",
-                       customer: receiptData.customer,
-                       cashierName: receiptData.cashierName,
-                       items: receiptData.items,
-                       subtotal: receiptData.subtotal,
-                       discountLabel: receiptData.discountLabel,
-                       discountAmount: receiptData.discountAmount,
-                       total: receiptData.total,
-                       createdAt: receiptData.createdAt,
-                       paymentMethod: receiptData.paymentMethod as "cash" | "card" | "digital",
-                       paidAmount: receiptData.paidAmount,
-                       changeAmount: receiptData.changeAmount
-                     }}
-                     variant="merchant"
-                   />
-                 </div>
+                <div ref={waitingRef}>
+                  <WaitingTicket orderId={receiptData.orderId || ""} createdAt={receiptData.createdAt} />
+                </div>
+                {/* Simple receipt for PDF export */}
+                <div ref={customerReceiptRef}>
+                  <ReceiptCard
+                    data={{
+                      title: "Receipt",
+                      orderId: receiptData.orderId || "",
+                      customer: receiptData.customer,
+                      cashierName: receiptData.cashierName,
+                      items: receiptData.items,
+                      subtotal: receiptData.subtotal,
+                      total: receiptData.total,
+                      createdAt: receiptData.createdAt,
+                      paymentMethod: receiptData.paymentMethod as "cash" | "card" | "digital",
+                    }}
+                    variant="simple"
+                  />
+                </div>
+                {/* Keep merchant receipt ref for backward compatibility */}
+                <div ref={merchantReceiptRef}>
+                  <ReceiptCard
+                    data={{
+                      title: "Merchant Copy",
+                      orderId: receiptData.orderId || "",
+                      customer: receiptData.customer,
+                      cashierName: receiptData.cashierName,
+                      items: receiptData.items,
+                      subtotal: receiptData.subtotal,
+                      discountLabel: receiptData.discountLabel,
+                      discountAmount: receiptData.discountAmount,
+                      total: receiptData.total,
+                      createdAt: receiptData.createdAt,
+                      paymentMethod: receiptData.paymentMethod as "cash" | "card" | "digital",
+                      paidAmount: receiptData.paidAmount,
+                      changeAmount: receiptData.changeAmount
+                    }}
+                    variant="merchant"
+                  />
+                </div>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
-  {/* Enhanced Sugar Selection Dialog */}
+  {/* Clean Sugar Selection Dialog */}
   <Dialog open={isSugarDialogOpen} onOpenChange={setIsSugarDialogOpen}>
-    <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-      <DialogHeader className="text-center pb-2">
-        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center mb-4">
-          <Droplets className="h-8 w-8 text-amber-600" />
+    <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogHeader className="text-center pb-4">
+        <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+          <Droplets className="h-6 w-6 text-gray-600" />
         </div>
-        <DialogTitle className="text-2xl font-bold text-gray-800 mb-2">
-          Customize Your Sweetness
+        <DialogTitle className="text-xl font-semibold text-gray-800">
+          Customize Sweetness
         </DialogTitle>
-        <DialogDescription className="text-base text-gray-600">
-          {pendingProduct ? `Perfecting your ${pendingProduct.name}` : "Choose your ideal sugar level"}
+        <DialogDescription className="text-gray-600">
+          {pendingProduct ? `For ${pendingProduct.name}` : "Choose sugar level"}
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-8 py-6">
-        {/* Quick Selection - Enhanced Design */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-lg font-semibold text-gray-800">Quick Selection</Label>
-            <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-              {parseFloat(selectedSugar) === 0 && "Pure & Natural"}
-              {parseFloat(selectedSugar) > 0 && parseFloat(selectedSugar) <= 25 && "Subtly Sweet"}
-              {parseFloat(selectedSugar) > 25 && parseFloat(selectedSugar) <= 75 && "Perfectly Balanced"}
-              {parseFloat(selectedSugar) > 75 && parseFloat(selectedSugar) <= 125 && "Sweet Indulgence"}
-              {parseFloat(selectedSugar) > 125 && "Extra Sweet"}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-5 gap-3">
+      <div className="space-y-6 py-2">
+        {/* Quick Selection */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium text-gray-700">Quick Selection</Label>
+          <div className="grid grid-cols-5 gap-2">
             {[
-              { level: 0, label: "Pure", description: "No sugar added", color: "bg-emerald-500", bgColor: "bg-emerald-50", textColor: "text-emerald-700", borderColor: "border-emerald-200" },
-              { level: 25, label: "Light", description: "Subtle sweetness", color: "bg-green-500", bgColor: "bg-green-50", textColor: "text-green-700", borderColor: "border-green-200" },
-              { level: 50, label: "Regular", description: "Perfect balance", color: "bg-amber-500", bgColor: "bg-amber-50", textColor: "text-amber-700", borderColor: "border-amber-200" },
-              { level: 75, label: "Sweet", description: "Sweet indulgence", color: "bg-orange-500", bgColor: "bg-orange-50", textColor: "text-orange-700", borderColor: "border-orange-200" },
-              { level: 100, label: "Extra", description: "Very sweet", color: "bg-red-500", bgColor: "bg-red-50", textColor: "text-red-700", borderColor: "border-red-200" }
-            ].map(({ level, label, description, color, bgColor, textColor, borderColor }) => (
+              { level: 0, label: "Pure", description: "No sugar" },
+              { level: 25, label: "Light", description: "Subtle" },
+              { level: 50, label: "Regular", description: "Balanced" },
+              { level: 75, label: "Sweet", description: "Sweet" },
+              { level: 100, label: "Extra", description: "Very sweet" }
+            ].map(({ level, label, description }) => (
               <button
                 key={level}
                 onClick={() => setSelectedSugar(level.toString())}
-                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 transform hover:scale-105 ${
+                className={`p-3 rounded-lg border-2 transition-all ${
                   parseFloat(selectedSugar) === level
-                    ? `${color} ${textColor} border-current shadow-lg scale-105`
-                    : `${bgColor} ${textColor} border-current hover:shadow-md`
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                <div className={`w-8 h-8 rounded-full ${color} mx-auto mb-2 flex items-center justify-center transition-all duration-200 ${
-                  parseFloat(selectedSugar) === level ? 'scale-110' : 'group-hover:scale-110'
-                }`}>
-                  <span className="text-white font-bold text-sm">
-                    {level === 0 ? '0' : level === 25 ? '¼' : level === 50 ? '½' : level === 75 ? '¾' : '+'}
-                  </span>
-                </div>
                 <div className="text-center">
-                  <div className="font-bold text-sm">{label}</div>
-                  <div className="text-xs opacity-75">{description}</div>
+                  <div className="font-semibold text-sm">{label}</div>
+                  <div className="text-xs text-gray-500">{description}</div>
                 </div>
-                {parseFloat(selectedSugar) === level && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-current flex items-center justify-center">
-                    <div className="w-2 h-2 bg-current rounded-full"></div>
-                  </div>
-                )}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Enhanced Slider Section */}
-        <div className="space-y-4">
+        {/* Slider Section */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <Gauge className="h-5 w-5 text-amber-600" />
-              Fine-tune Your Preference
-            </Label>
-            <div className="text-sm font-bold text-amber-600 bg-amber-100 px-3 py-1 rounded-full">
+            <Label className="text-sm font-medium text-gray-700">Fine-tune</Label>
+            <div className="text-sm font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
               {selectedSugar}%
             </div>
           </div>
-
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100">
-            <div className="px-4">
-              <Slider
-                value={[parseFloat(selectedSugar)]}
-                onValueChange={(value) => setSelectedSugar(value[0].toString())}
-                max={200}
-                min={0}
-                step={5}
-                className="w-full"
-              />
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-600">0%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-600">100%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-600">200%</span>
-                </div>
-              </div>
+          <div className="px-2">
+            <Slider
+              value={[parseFloat(selectedSugar)]}
+              onValueChange={(value) => setSelectedSugar(value[0].toString())}
+              max={200}
+              min={0}
+              step={5}
+              className="w-full"
+            />
+            <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+              <span>0%</span>
+              <span>100%</span>
+              <span>200%</span>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Custom Input */}
-        <div className="space-y-3">
-          <Label htmlFor="custom-sugar" className="text-lg font-semibold text-gray-800">
+        {/* Custom Input */}
+        <div className="space-y-2">
+          <Label htmlFor="custom-sugar" className="text-sm font-medium text-gray-700">
             Custom Value
           </Label>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Input
               id="custom-sugar"
               type="number"
-              inputMode="decimal"
               value={selectedSugar}
               onChange={(e) => {
                 const v = e.target.value.replace(/[^0-9.]/g, "")
@@ -1213,42 +1186,33 @@ export function CashierPOS() {
               min={0}
               max={200}
               step="1"
-              className="text-center text-lg font-semibold h-12 border-2 border-amber-200 focus:border-amber-400 rounded-lg"
+              className="text-center"
             />
-            <div className="flex items-center px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg">
-              <span className="text-lg">%</span>
+            <div className="flex items-center px-3 bg-gray-100 text-gray-700 font-medium rounded">
+              <span>%</span>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Preview */}
-        <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-200 rounded-xl p-6 shadow-inner">
+        {/* Preview */}
+        <div className="bg-gray-50 rounded-lg p-4">
           <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full mx-auto mb-3 flex items-center justify-center">
-              <Coffee className="h-6 w-6 text-white" />
+            <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center">
+              <Coffee className="h-4 w-4 text-gray-600" />
             </div>
-            <h3 className="font-bold text-gray-800 mb-2">Your Selection</h3>
-            <div className="bg-white rounded-lg p-4 border border-amber-200">
-              <p className="text-lg font-bold text-gray-800">
-                Sugar Level: <span className="text-amber-600">{selectedSugar}%</span>
-              </p>
-              <p className="text-sm text-gray-600 mt-1">
-                {parseFloat(selectedSugar) === 0 && "🌿 Pure and natural - No sugar added"}
-                {parseFloat(selectedSugar) > 0 && parseFloat(selectedSugar) <= 25 && "🍃 Lightly sweetened - Subtle enhancement"}
-                {parseFloat(selectedSugar) > 25 && parseFloat(selectedSugar) <= 75 && "☕ Perfectly balanced - Classic sweetness"}
-                {parseFloat(selectedSugar) > 75 && parseFloat(selectedSugar) <= 125 && "🍯 Sweet indulgence - Enhanced flavor"}
-                {parseFloat(selectedSugar) > 125 && "🍬 Extra sweet - Maximum sweetness"}
-              </p>
-            </div>
+            <h3 className="font-medium text-gray-800 mb-1">Selection</h3>
+            <p className="text-sm text-gray-600">
+              Sugar Level: <span className="font-semibold">{selectedSugar}%</span>
+            </p>
           </div>
         </div>
 
-        {/* Enhanced Action Buttons */}
-        <div className="flex gap-4 pt-4">
+        {/* Action Buttons */}
+        <div className="flex gap-3 pt-2">
           <Button
             variant="outline"
             onClick={() => setIsSugarDialogOpen(false)}
-            className="flex-1 h-12 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50 font-semibold"
+            className="flex-1"
           >
             Cancel
           </Button>
@@ -1261,9 +1225,9 @@ export function CashierPOS() {
               setIsSugarDialogOpen(false)
               setPendingProduct(null)
             }}
-            className="flex-1 h-12 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            className="flex-1"
           >
-            <Coffee className="h-5 w-5 mr-2" />
+            <Coffee className="h-4 w-4 mr-2" />
             Add to Cart
           </Button>
         </div>

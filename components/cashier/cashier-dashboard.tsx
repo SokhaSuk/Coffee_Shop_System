@@ -41,7 +41,7 @@ function CashierDashboardContent() {
                 { name: "Mocha", price: 5.00, description: "Chocolate and espresso blend", icon: "🍫" },
                 { name: "Macchiato", price: 4.00, description: "Espresso marked with milk", icon: "🎯" }
               ].map((product) => (
-                <Card key={product.name} className="surface-elevated hover:shadow-lg transition-all duration-300 group p-3 sm:p-4">
+                <Card key={product.name} className="hover:shadow-md transition-shadow group p-3 sm:p-4">
                   <CardHeader className="pb-2 sm:pb-3 p-0">
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg">
                       <div className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">
@@ -56,7 +56,7 @@ function CashierDashboardContent() {
                   <CardContent className="p-0 pt-2 sm:pt-3">
                     <div className="flex items-center justify-between">
                       <span className="text-lg sm:text-xl font-bold text-primary">${product.price.toFixed(2)}</span>
-                      <Badge variant="default" className="bg-green-100 text-green-800 text-xs sm:text-sm">
+                      <Badge variant="secondary" className="text-xs sm:text-sm">
                         In Stock
                       </Badge>
                     </div>
@@ -74,16 +74,16 @@ function CashierDashboardContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/90 backdrop-blur-md sticky top-0 z-20 shadow-[var(--surface-elevation-1)]">
+      <header className="border-b bg-white sticky top-0 z-20 shadow-sm">
         <div className="w-full px-2 sm:px-4 py-2 sm:py-4">
           {/* Top row: Title and Logout */}
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-              <div className="coffee-gradient rounded-full p-2 sm:p-3 shadow-[var(--surface-elevation-1)] interactive-scale flex-shrink-0">
+              <div className="bg-gray-900 rounded-full p-2 sm:p-3 shadow-sm flex-shrink-0">
                 <Coffee className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gradient tracking-tight truncate">DARK COFFEE</h1>
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 tracking-tight truncate">DARK COFFEE</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium">Cashier System</p>
               </div>
             </div>
@@ -151,7 +151,7 @@ function CashierDashboardContent() {
 
       {/* Dashboard Overview - Only show when on POS tab */}
       {activeSection === "pos" && (
-        <div className="bg-muted/30 border-b">
+        <div className="bg-gray-50 border-b">
           <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
             <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               <DashboardCard

@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { DailySalesReport } from "./sales-report"
 import { ReceiptCard, type ReceiptData } from "./receipt-card"
-import { downloadElementAsPdf, createSimpleReceiptPdf } from "@/lib/pdf"
+import { downloadElementAsPdf } from "@/lib/pdf"
 import { useToast } from "@/hooks/use-toast"
 
 export function OrderHistory() {
@@ -26,8 +26,7 @@ export function OrderHistory() {
   const [isReportOpen, setIsReportOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadingOrderId, setDownloadingOrderId] = useState<string | null>(null)
-  const customerReceiptRef = useRef<HTMLDivElement | null>(null)
-  const merchantReceiptRef = useRef<HTMLDivElement | null>(null)
+  const simpleReceiptRef = useRef<HTMLDivElement | null>(null)
 
   const timeFiltered = useMemo(() => getOrdersByDateFilter(dateFilter), [dateFilter, getOrdersByDateFilter])
   const filteredOrders = useMemo(
@@ -68,19 +67,7 @@ export function OrderHistory() {
     }
 
     try {
-      // Create a temporary print container with receipt HTML
-      const printContainer = document.createElement('div')
-      printContainer.id = 'receipt-print-container'
-      printContainer.style.position = 'fixed'
-      printContainer.style.left = '-9999px'
-      printContainer.style.top = '0'
-      printContainer.style.width = '400px'
-      printContainer.style.background = 'white'
-      printContainer.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", Courier, monospace'
-      printContainer.style.color = 'black'
-      printContainer.style.padding = '20px'
-      printContainer.style.boxSizing = 'border-box'
-
+      // Create simple receipt data
       const receiptData: ReceiptData = {
         title: "Receipt",
         orderId: targetOrder.id,
@@ -95,120 +82,114 @@ export function OrderHistory() {
         subtotal: targetOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
         total: targetOrder.total,
         createdAt: targetOrder.createdAt,
-        paymentMethod: targetOrder.paymentMethod as "cash" | "card" | "digital"
+        paymentMethod: targetOrder.paymentMethod as "cash" | "card" | "digital",
       }
 
-      // Generate receipt HTML directly
+      // Create a temporary print container with simple receipt component
+      const printContainer = document.createElement('div')
+      printContainer.id = 'receipt-print-container'
+      printContainer.style.position = 'fixed'
+      printContainer.style.left = '-9999px'
+      printContainer.style.top = '0'
+      printContainer.style.width = '800px'
+      printContainer.style.background = 'white'
+      printContainer.style.fontFamily = 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans'
+      printContainer.style.color = 'black'
+      printContainer.style.padding = '20px'
+      printContainer.style.boxSizing = 'border-box'
+
+      // Generate simple receipt HTML
       const receiptHTML = `
-        <div class="receipt-container bg-white text-black font-mono text-sm leading-relaxed w-full max-w-md mx-auto break-words shadow-lg rounded-lg border">
-          <div class="receipt-header text-center mb-6 p-4">
-            <div class="mb-4">
-              <div class="flex items-center justify-center gap-3 mb-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-amber-600 to-amber-800 rounded-full flex items-center justify-center shadow-lg">
-                  <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                <div>
-                  <h1 class="font-bold text-xl tracking-wide text-gray-800">DaCoffee Shop</h1>
-                  <div class="text-xs text-amber-600 font-semibold tracking-wider">Premium Coffee Experience</div>
-                </div>
-              </div>
-              <div class="bg-amber-50 px-4 py-2 rounded-full inline-block border border-amber-200">
-                <span class="text-sm uppercase tracking-wider text-amber-800 font-bold">CUSTOMER COPY</span>
+        <div style="background: white; color: black; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans; font-size: 14px; line-height: 1.5; width: 100%; max-width: 400px; margin: 0 auto; word-wrap: break-word; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border-radius: 8px; border: 1px solid #e5e7eb;">
+
+          <!-- Simple Header Section -->
+          <div style="text-align: center; margin-bottom: 24px; padding: 16px;">
+            <div style="margin-bottom: 16px;">
+              <h1 style="font-weight: bold; font-size: 24px; letter-spacing: 0.025em; color: #111827; margin-bottom: 8px;">Coffee-Shop</h1>
+              <div style="font-size: 12px; color: #6b7280; line-height: 1.4;">
+                <div>Lorem ipsum 258</div>
+                <div>City Index - 02025</div>
+                <div>Tel.: +456-468-987-02</div>
               </div>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <div class="space-y-2">
-                <div class="flex items-center justify-center gap-2 text-xs text-gray-600">
-                  <span>#12 Street 123, Phnom Penh, Cambodia</span>
-                </div>
-                <div class="flex items-center justify-center gap-2 text-xs text-gray-600">
-                  <span>+855 12-345-678</span>
-                </div>
-                <div class="flex items-center justify-center gap-2 text-xs text-gray-600">
-                  <span>info@dacoffee.com</span>
-                </div>
+            <div style="border-top: 2px; border-style: dotted; border-color: #d1d5db; padding-top: 12px;"></div>
+          </div>
+
+          <!-- Store and Transaction Info -->
+          <div style="padding: 0 16px 16px;">
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="color: #374151;">Store: 25896</span>
+                <span style="color: #374151; font-weight: 500;">${new Date(receiptData.createdAt).toLocaleString()}</span>
               </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="color: #374151;">Server: NY 58/8</span>
+                <span style="color: #374151;">AM</span>
+              </div>
+              <div style="color: #374151;">Survey code: 0000-2555-2588-4545-69</div>
+            </div>
+            <div style="border-top: 2px; border-style: dotted; border-color: #d1d5db; padding-top: 12px;"></div>
+          </div>
+
+          <!-- Items Table -->
+          <div style="padding: 0 16px 24px;">
+            <div style="margin-bottom: 12px;">
+              <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 16px; text-sm; font-weight: 500; color: #374151; border-bottom: 1px solid #d1d5db; padding-bottom: 8px;">
+                <span>Name</span>
+                <span style="text-align: center;">Qty</span>
+                <span style="text-align: right;">Price</span>
+              </div>
+            </div>
+
+            <div>
+              ${receiptData.items.map(item => `
+                <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 16px; text-sm; padding: 4px 0; color: #111827;">
+                  <div>${item.name}</div>
+                  <div style="text-align: center;">${item.quantity}</div>
+                  <div style="text-align: right;">$${(item.price * item.quantity).toFixed(2)}</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div style="border-top: 2px; border-style: dotted; border-color: #d1d5db; padding-top: 12px; margin-top: 12px;"></div>
+          </div>
+
+          <!-- Simple Totals Section -->
+          <div style="padding: 0 16px 24px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+                <span style="font-size: 18px; font-weight: bold; color: #111827;">Price</span>
+                <span style="font-size: 18px; font-weight: bold; color: #111827;">$${receiptData.total.toFixed(2)}</span>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+                <span style="font-size: 18px; font-weight: bold; color: #111827;">CASH</span>
+                <span style="font-size: 18px; font-weight: bold; color: #111827;">$100.00</span>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+                <span style="font-size: 18px; font-weight: bold; color: #111827;">CHANGE</span>
+                <span style="font-size: 18px; font-weight: bold; color: #111827;">$${(100 - receiptData.total).toFixed(2)}</span>
+              </div>
+
+              <div style="border-top: 2px; border-style: dotted; border-color: #d1d5db; padding-top: 12px; margin-top: 12px;"></div>
             </div>
           </div>
-          <div class="receipt-details bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 my-4">
-            <div class="space-y-3">
-              <div class="flex justify-between items-center">
-                <span class="text-gray-700 font-medium">Receipt No:</span>
-                <span class="font-bold text-gray-800 bg-white px-3 py-1 rounded-lg border shadow-sm">${receiptData.orderId}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-700 font-medium">Date & Time:</span>
-                <span class="font-semibold text-gray-800">${new Date(receiptData.createdAt).toLocaleString()}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-700 font-medium">Customer:</span>
-                <span class="font-semibold text-gray-800 capitalize">${receiptData.customer}</span>
-              </div>
-            </div>
-          </div>
-          <div class="receipt-items mb-6">
-            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="font-semibold text-gray-800 flex items-center gap-2">Order Items</h3>
-                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  ${receiptData.items.length} item${receiptData.items.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <div class="space-y-3">
-                ${receiptData.items.map(item => `
-                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div class="flex-1">
-                      <div class="font-medium text-gray-800">${item.name}</div>
-                      <div class="text-xs text-gray-600">$${item.price.toFixed(2)} each</div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                      <div class="text-center px-3 py-1 bg-white rounded border">
-                        <div class="text-sm font-bold">${item.quantity}x</div>
-                      </div>
-                      <div class="text-right">
-                        <div class="font-bold text-lg">$${(item.price * item.quantity).toFixed(2)}</div>
-                      </div>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          </div>
-          <div class="receipt-totals bg-gradient-to-br from-gray-50 to-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <div class="space-y-3">
-              <div class="flex justify-between items-center py-2">
-                <span class="text-gray-700 font-medium">Subtotal:</span>
-                <span class="font-semibold">$${receiptData.subtotal.toFixed(2)}</span>
-              </div>
-              <div class="border-t border-amber-200 pt-3 mt-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-lg font-bold text-gray-800">TOTAL:</span>
-                  <span class="text-2xl font-bold text-amber-600 bg-white px-4 py-2 rounded-lg shadow-sm">
-                    $${receiptData.total.toFixed(2)}
-                  </span>
+
+          <!-- Simple Footer -->
+          <div style="text-align: center; padding: 0 16px 24px;">
+            <div style="margin-bottom: 24px;">
+              <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin-bottom: 16px;">THANK YOU!</h2>
+
+              <!-- Simple Barcode -->
+              <div style="background: #000000; color: white; padding: 12px; border-radius: 4px; display: inline-block;">
+                <div style="display: flex; justify-content: center; gap: 2px; margin-bottom: 4px;">
+                  ${Array.from({ length: 32 }, (_, i) => (
+                    `<div style="width: 3px; height: 32px; background: ${Math.random() > 0.3 ? 'white' : 'black'};"></div>`
+                  )).join('')}
                 </div>
+                <div style="font-size: 10px;">modif.ai</div>
               </div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-dotted border-gray-300">
-              <div class="flex items-center justify-between text-sm">
-                <div class="flex items-center gap-1">
-                  <span class="font-medium">Payment Method:</span>
-                </div>
-                <span class="capitalize font-semibold">${receiptData.paymentMethod}</span>
-              </div>
-            </div>
-          </div>
-          <div class="receipt-footer border-t border-dashed border-gray-400 pt-4 text-center">
-            <div class="mb-4">
-              <p class="text-base font-medium text-gray-800 mb-2">Thank you for visiting!</p>
-              <p class="text-xs text-gray-600 mb-1">We appreciate your business</p>
-              <p class="text-xs text-gray-600">Follow us: @DaCoffee | www.dacoffee.com</p>
-            </div>
-            <div class="text-xs text-gray-500 space-y-1">
-              <p>Customer Copy - Please keep your receipt</p>
-              <p>Receipt #${receiptData.orderId}</p>
             </div>
           </div>
         </div>
@@ -249,7 +230,7 @@ export function OrderHistory() {
     setIsDownloading(true)
 
     try {
-      // Create receipt data for visual components
+      // Create simple receipt data
       const receiptData: ReceiptData = {
         title: "Receipt",
         orderId: targetOrder.id,
@@ -265,45 +246,26 @@ export function OrderHistory() {
         total: targetOrder.total,
         createdAt: targetOrder.createdAt,
         paymentMethod: targetOrder.paymentMethod as "cash" | "card" | "digital",
-        // Customer Copy enhancements
-        loyaltyPoints: Math.floor(targetOrder.total * 2), // 2 points per dollar spent
-        loyaltyMessage: "Thank you for being a valued customer!",
-        qrCodeUrl: "https://dacoffee.com/feedback",
-        // Merchant Copy enhancements
-        authorizationCode: targetOrder.paymentMethod === "card" ? "AUTH" + Math.random().toString().substring(2, 8).toUpperCase() : undefined,
-        maskedCardNumber: targetOrder.paymentMethod === "card" ? "XXXX-XXXX-XXXX-1234" : undefined,
-        cardType: targetOrder.paymentMethod === "card" ? "VISA" : undefined,
-        requiresSignature: targetOrder.paymentMethod === "card" && targetOrder.total > 25,
-        internalNotes: `Customer satisfaction rating: Excellent. Order completed successfully.`,
-        registerNumber: "REG-001",
-        shiftId: "SHIFT-A",
-        transactionReference: targetOrder.id,
       }
 
-      // Generate customer receipt using visual component
-      const customerElement = customerReceiptRef.current
-      if (customerElement) {
+      // Generate simple receipt using visual component
+      const simpleElement = simpleReceiptRef.current
+      if (simpleElement) {
         await downloadElementAsPdf(
-          customerElement,
-          `customer-${targetOrder.id}.pdf`,
-          { orientation: "p", format: "a4", marginMm: 10, scale: 2 }
+          simpleElement,
+          `receipt-${targetOrder.id}.pdf`,
+          { orientation: "p", format: "a4", marginMm: 8, scale: 3 }
         )
-      }
 
-      // Generate merchant receipt using visual component
-      const merchantElement = merchantReceiptRef.current
-      if (merchantElement) {
-        await downloadElementAsPdf(
-          merchantElement,
-          `merchant-${targetOrder.id}.pdf`,
-          { orientation: "p", format: "a4", marginMm: 10, scale: 2 }
-        )
+        toast({
+          title: "Success",
+          description: "Receipt downloaded successfully!"
+        })
+      } else {
+        // Fallback to print function if component not available
+        console.warn("Simple receipt component not available, falling back to print")
+        printReceipt(targetOrder)
       }
-
-      toast({
-        title: "Success",
-        description: "Both customer and merchant receipts downloaded successfully!"
-      })
     } catch (error) {
       console.error("PDF generation error:", error)
       const errorMessage = (error as Error).message || "Could not generate PDF receipt."
@@ -328,7 +290,7 @@ export function OrderHistory() {
             variant="outline"
             onClick={() => printReceipt()}
             disabled={!selectedOrder || isDownloading}
-            className="bg-coffee-50 hover:bg-coffee-100 border-coffee-200"
+            className="bg-gray-50 hover:bg-gray-100 border-gray-300"
           >
             <Receipt className="h-4 w-4 mr-2" />
             Print Receipt
@@ -583,7 +545,7 @@ export function OrderHistory() {
       {/* Order Details Dialog */}
       {selectedOrder && (
         <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-          <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Order Details - {selectedOrder.id}</DialogTitle>
             </DialogHeader>
@@ -625,31 +587,27 @@ export function OrderHistory() {
                 </div>
               </div>
 
-              {/* Receipt Preview */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                  <p className="font-medium">Receipt Preview:</p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownloadReceipt(selectedOrder)}
-                      disabled={isDownloading}
-                      className="gap-2 flex-1 sm:flex-none"
-                    >
-                      <Download className={`h-4 w-4 ${isDownloading ? 'animate-spin' : ''}`} />
-                      <span className="hidden sm:inline">{isDownloading ? 'Generating...' : 'Download PDF'}</span>
-                      <span className="sm:hidden">{isDownloading ? 'Generating...' : 'Download'}</span>
-                    </Button>
-                  </div>
+              {/* Receipt */}
+              <div className="border rounded-xl p-8 bg-gray-100 shadow-inner">
+                <div className="flex justify-end mb-6">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadReceipt(selectedOrder)}
+                    disabled={isDownloading}
+                    className="gap-2 shadow-md"
+                  >
+                    <Download className={`h-4 w-4 ${isDownloading ? 'animate-spin' : ''}`} />
+                    <span>{isDownloading ? 'Generating...' : 'Download PDF'}</span>
+                  </Button>
                 </div>
-                <div className="bg-white p-4 rounded border max-h-96 overflow-y-auto">
+                <div className="bg-white p-8 rounded-xl border border-gray-300 shadow-lg max-h-[600px] overflow-y-auto">
                   <ReceiptCard
                     data={{
                       title: "Receipt",
                       orderId: selectedOrder.id,
                       customer: selectedOrder.customer,
-                      cashierName: "System", // You might want to add cashier name to Order type
+                      cashierName: "System",
                       items: selectedOrder.items.map((item, idx) => ({
                         id: item.id || `item-${idx}`,
                         name: item.name,
@@ -660,21 +618,8 @@ export function OrderHistory() {
                       total: selectedOrder.total,
                       createdAt: selectedOrder.createdAt,
                       paymentMethod: selectedOrder.paymentMethod as "cash" | "card" | "digital",
-                      // Customer Copy enhancements
-                      loyaltyPoints: Math.floor(selectedOrder.total * 2), // 2 points per dollar spent
-                      loyaltyMessage: "Thank you for being a valued customer!",
-                      qrCodeUrl: "https://dacoffee.com/feedback",
-                      // Merchant Copy enhancements
-                      authorizationCode: selectedOrder.paymentMethod === "card" ? "AUTH" + Math.random().toString().substring(2, 8).toUpperCase() : undefined,
-                      maskedCardNumber: selectedOrder.paymentMethod === "card" ? "XXXX-XXXX-XXXX-1234" : undefined,
-                      cardType: selectedOrder.paymentMethod === "card" ? "VISA" : undefined,
-                      requiresSignature: selectedOrder.paymentMethod === "card" && selectedOrder.total > 25,
-                      internalNotes: `Customer satisfaction rating: Excellent. Order completed successfully.`,
-                      registerNumber: "REG-001",
-                      shiftId: "SHIFT-A",
-                      transactionReference: selectedOrder.id,
                     }}
-                    variant="customer"
+                    variant="simple"
                   />
                 </div>
               </div>
@@ -708,15 +653,15 @@ export function OrderHistory() {
 
       {/* Off-screen areas for PDF export (must be rendered for html2canvas) */}
       <div style={{ position: "absolute", left: -99999, top: 0 }} aria-hidden>
-        <div ref={customerReceiptRef}>
+        <div ref={simpleReceiptRef}>
           <ReceiptCard
             data={{
-              title: "Customer Receipt",
+              title: "Receipt",
               orderId: selectedOrder?.id || "",
               customer: selectedOrder?.customer || "",
               cashierName: "System",
-              items: selectedOrder?.items.map((item) => ({
-                id: item.id || `item-${selectedOrder?.items.indexOf(item)}`,
+              items: selectedOrder?.items.map((item, idx) => ({
+                id: item.id || `item-${idx}`,
                 name: item.name,
                 quantity: item.quantity,
                 price: item.price
@@ -724,30 +669,9 @@ export function OrderHistory() {
               subtotal: selectedOrder?.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0,
               total: selectedOrder?.total || 0,
               createdAt: selectedOrder?.createdAt || "",
-              paymentMethod: selectedOrder?.paymentMethod as "cash" | "card" | "digital"
+              paymentMethod: selectedOrder?.paymentMethod as "cash" | "card" | "digital",
             }}
-            variant="customer"
-          />
-        </div>
-        <div ref={merchantReceiptRef}>
-          <ReceiptCard
-            data={{
-              title: "Merchant Copy",
-              orderId: selectedOrder?.id || "",
-              customer: selectedOrder?.customer || "",
-              cashierName: "System",
-              items: selectedOrder?.items.map((item) => ({
-                id: item.id || `item-${selectedOrder?.items.indexOf(item)}`,
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price
-              })) || [],
-              subtotal: selectedOrder?.items.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0,
-              total: selectedOrder?.total || 0,
-              createdAt: selectedOrder?.createdAt || "",
-              paymentMethod: selectedOrder?.paymentMethod as "cash" | "card" | "digital"
-            }}
-            variant="merchant"
+            variant="simple"
           />
         </div>
       </div>
