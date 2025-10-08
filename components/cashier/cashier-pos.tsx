@@ -715,11 +715,11 @@ export function CashierPOS() {
                           <span className="text-sm sm:text-lg lg:text-xl font-bold text-coffee-900">${product.price.toFixed(2)}</span>
                         )}
                       </div>
-                      {product.isAvailable ? (
+                      {/* {product.isAvailable ? (
                         <div className="text-xs text-coffee-600">Tap card to add</div>
                       ) : (
                         <Badge variant="destructive">Unavailable</Badge>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>

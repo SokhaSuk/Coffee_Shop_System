@@ -79,7 +79,6 @@ export async function downloadElementAsPdf(
       width: clonedElement.scrollWidth,
       height: clonedElement.scrollHeight,
       foreignObjectRendering: false, // Disable foreign object rendering to avoid CSS issues
-      letterRendering: true, // Better text rendering
       imageTimeout: 15000, // Increase timeout for better image loading
       removeContainer: true
     })

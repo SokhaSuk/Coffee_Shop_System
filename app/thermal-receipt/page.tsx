@@ -47,7 +47,7 @@ export default function ThermalReceiptPage() {
   const receiptRef = useRef<HTMLDivElement>(null)
 
   const handlePrint = useReactToPrint({
-    content: () => receiptRef.current,
+    contentRef: receiptRef,
     documentTitle: `Receipt-${sampleOrder.orderId}`,
     onAfterPrint: () => {
       console.log("Receipt printed successfully!")
