@@ -34,18 +34,18 @@ function CashierDashboardContent() {
 
             <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[
-                { name: "Espresso", price: 3.50, description: "Rich and bold espresso", icon: "☕" },
-                { name: "Latte", price: 4.75, description: "Smooth espresso with milk", icon: "🥛" },
-                { name: "Cappuccino", price: 4.25, description: "Equal parts espresso, milk, foam", icon: "🫧" },
-                { name: "Americano", price: 3.25, description: "Espresso with hot water", icon: "💧" },
-                { name: "Mocha", price: 5.00, description: "Chocolate and espresso blend", icon: "🍫" },
-                { name: "Macchiato", price: 4.00, description: "Espresso marked with milk", icon: "🎯" }
+                { name: "Espresso", price: 3.50, description: "Rich and bold espresso"},
+                { name: "Latte", price: 4.75, description: "Smooth espresso with milk"},
+                { name: "Cappuccino", price: 4.25, description: "Equal parts espresso, milk, foam"},
+                { name: "Americano", price: 3.25, description: "Espresso with hot water"},
+                { name: "Mocha", price: 5.00, description: "Chocolate and espresso blend"},
+                { name: "Macchiato", price: 4.00, description: "Espresso marked with milk"}
               ].map((product) => (
                 <Card key={product.name} className="hover:shadow-md transition-shadow group p-3 sm:p-4">
                   <CardHeader className="pb-2 sm:pb-3 p-0">
                     <CardTitle className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg">
                       <div className="text-xl sm:text-2xl group-hover:scale-110 transition-transform">
-                        {product.icon}
+                        {product.name.charAt(0)}
                       </div>
                       <div className="flex-1">
                         <div className="font-bold text-sm sm:text-base">{product.name}</div>
