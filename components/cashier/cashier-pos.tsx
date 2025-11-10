@@ -1130,7 +1130,7 @@ export function CashierPOS() {
                 onClick={() => setSelectedSugar(level.toString())}
                 className={`p-3 rounded-lg border-2 transition-all ${
                   parseFloat(selectedSugar) === level
-                    ? "bg-gray-900 text-white border-gray-900"
+                    ? "bg-primary text-gray-200 border-gray-900"
                     : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                 }`}
               >
@@ -1146,8 +1146,8 @@ export function CashierPOS() {
         {/* Slider Section */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium text-gray-700">Fine-tune</Label>
-            <div className="text-sm font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
+            <Label className="text-sm font-medium text-primary">Fine-tune</Label>
+            <div className="text-sm font-semibold text-primary bg-gray-100 px-2 py-1 rounded">
               {selectedSugar}%
             </div>
           </div>

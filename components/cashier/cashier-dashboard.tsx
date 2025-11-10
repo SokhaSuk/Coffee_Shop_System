@@ -151,7 +151,7 @@ function CashierDashboardContent() {
 
       {/* Dashboard Overview - Only show when on POS tab */}
       {activeSection === "pos" && (
-        <div className="bg-gray-50 border-b">
+        <div className="bg-primary-50 border-b">
           <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
             <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               <DashboardCard
