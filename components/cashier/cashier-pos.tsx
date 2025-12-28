@@ -97,8 +97,8 @@ export function CashierPOS() {
         toast({ title: "Draft items unavailable", description: "None of the items were found in the catalog.", variant: "destructive" })
       }
       localStorage.removeItem("darkCoffeeDraftOrder")
-    } catch {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch { }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const categoryOptions = useMemo(() => ["All", ...categories.map((c) => c.name)], [categories])
@@ -575,11 +575,7 @@ export function CashierPOS() {
                 variant={selectedCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleCategorySelect(category)}
-                className={
-                  selectedCategory === category
-                    ? "rounded-full bg-coffee-700 hover:bg-coffee-800 text-white"
-                    : "rounded-full border-coffee-300 text-coffee-700 hover:bg-coffee-50"
-                }
+                className="rounded-full"
               >
                 {category}
               </Button>
@@ -593,11 +589,7 @@ export function CashierPOS() {
                 variant={selectedType === t ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleTypeSelect(t)}
-                className={
-                  selectedType === t
-                    ? "rounded-full bg-coffee-700 hover:bg-coffee-800 text-white"
-                    : "rounded-full border-coffee-300 text-coffee-700 hover:bg-coffee-50"
-                }
+                className="rounded-full"
               >
                 {t}
               </Button>
@@ -614,9 +606,8 @@ export function CashierPOS() {
             return (
               <Card
                 key={product.id}
-                className={`group relative cursor-pointer overflow-hidden transition-all border border-coffee-200 hover:shadow-md sm:hover:shadow-lg hover:-translate-y-0.5 focus-within:ring-1 focus-within:ring-ring/30 p-2 sm:p-3 lg:p-4 ${
-                  !product.isAvailable ? "opacity-60" : "hover:border-coffee-400"
-                }`}
+                className={`group relative cursor-pointer overflow-hidden transition-all border border-coffee-200 hover:shadow-md sm:hover:shadow-lg hover:-translate-y-0.5 focus-within:ring-1 focus-within:ring-ring/30 p-2 sm:p-3 lg:p-4 ${!product.isAvailable ? "opacity-60" : "hover:border-coffee-400"
+                  }`}
                 onClick={() => {
                   if (!product.isAvailable) return
                   if (product.category === "coffee") {
@@ -859,7 +850,7 @@ export function CashierPOS() {
                       <span>-${discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  
+
                   <Separator className="bg-coffee-200" />
                   <div className="flex justify-between font-bold text-coffee-900">
                     <span>Total:</span>
@@ -974,7 +965,7 @@ export function CashierPOS() {
                   >
                     Clear Cart
                   </Button>
-                  
+
                   {/* Print functionality has been removed */}
                 </div>
               </>
@@ -1098,142 +1089,141 @@ export function CashierPOS() {
           )}
         </DialogContent>
       </Dialog>
-  {/* Clean Sugar Selection Dialog */}
-  <Dialog open={isSugarDialogOpen} onOpenChange={setIsSugarDialogOpen}>
-    <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-      <DialogHeader className="text-center pb-4">
-        <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-          <Droplets className="h-6 w-6 text-gray-600" />
-        </div>
-        <DialogTitle className="text-xl font-semibold text-gray-800">
-          Customize Sweetness
-        </DialogTitle>
-        <DialogDescription className="text-gray-600">
-          {pendingProduct ? `For ${pendingProduct.name}` : "Choose sugar level"}
-        </DialogDescription>
-      </DialogHeader>
+      {/* Clean Sugar Selection Dialog */}
+      <Dialog open={isSugarDialogOpen} onOpenChange={setIsSugarDialogOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="text-center pb-4">
+            <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+              <Droplets className="h-6 w-6 text-gray-600" />
+            </div>
+            <DialogTitle className="text-xl font-semibold text-gray-800">
+              Customize Sweetness
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              {pendingProduct ? `For ${pendingProduct.name}` : "Choose sugar level"}
+            </DialogDescription>
+          </DialogHeader>
 
-      <div className="space-y-6 py-2">
-        {/* Quick Selection */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">Quick Selection</Label>
-          <div className="grid grid-cols-5 gap-2">
-            {[
-              { level: 0, label: "Pure", description: "No sugar" },
-              { level: 25, label: "Light", description: "Subtle" },
-              { level: 50, label: "Regular", description: "Balanced" },
-              { level: 75, label: "Sweet", description: "Sweet" },
-              { level: 100, label: "Extra", description: "Very sweet" }
-            ].map(({ level, label, description }) => (
-              <button
-                key={level}
-                onClick={() => setSelectedSugar(level.toString())}
-                className={`p-3 rounded-lg border-2 transition-all ${
-                  parseFloat(selectedSugar) === level
-                    ? "bg-primary text-gray-200 border-gray-900"
-                    : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                <div className="text-center">
-                  <div className="font-semibold text-sm">{label}</div>
-                  <div className="text-xs text-gray-500">{description}</div>
+          <div className="space-y-6 py-2">
+            {/* Quick Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700">Quick Selection</Label>
+              <div className="grid grid-cols-5 gap-2">
+                {[
+                  { level: 0, label: "Pure", description: "No sugar" },
+                  { level: 25, label: "Light", description: "Subtle" },
+                  { level: 50, label: "Regular", description: "Balanced" },
+                  { level: 75, label: "Sweet", description: "Sweet" },
+                  { level: 100, label: "Extra", description: "Very sweet" }
+                ].map(({ level, label, description }) => (
+                  <button
+                    key={level}
+                    onClick={() => setSelectedSugar(level.toString())}
+                    className={`p-3 rounded-lg border-2 transition-all ${parseFloat(selectedSugar) === level
+                        ? "bg-primary text-gray-200 border-gray-900"
+                        : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      }`}
+                  >
+                    <div className="text-center">
+                      <div className="font-semibold text-sm">{label}</div>
+                      <div className="text-xs text-gray-500">{description}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Slider Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-primary">Fine-tune</Label>
+                <div className="text-sm font-semibold text-primary bg-gray-100 px-2 py-1 rounded">
+                  {selectedSugar}%
                 </div>
-              </button>
-            ))}
-          </div>
-        </div>
+              </div>
+              <div className="px-2">
+                <Slider
+                  value={[parseFloat(selectedSugar)]}
+                  onValueChange={(value) => setSelectedSugar(value[0].toString())}
+                  max={200}
+                  min={0}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                  <span>0%</span>
+                  <span>100%</span>
+                  <span>200%</span>
+                </div>
+              </div>
+            </div>
 
-        {/* Slider Section */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium text-primary">Fine-tune</Label>
-            <div className="text-sm font-semibold text-primary bg-gray-100 px-2 py-1 rounded">
-              {selectedSugar}%
+            {/* Custom Input */}
+            <div className="space-y-2">
+              <Label htmlFor="custom-sugar" className="text-sm font-medium text-gray-700">
+                Custom Value
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="custom-sugar"
+                  type="number"
+                  value={selectedSugar}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9.]/g, "")
+                    setSelectedSugar(v)
+                  }}
+                  placeholder="0 - 200"
+                  min={0}
+                  max={200}
+                  step="1"
+                  className="text-center"
+                />
+                <div className="flex items-center px-3 bg-gray-100 text-gray-700 font-medium rounded">
+                  <span>%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-center">
+                <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center">
+                  <Coffee className="h-4 w-4 text-gray-600" />
+                </div>
+                <h3 className="font-medium text-gray-800 mb-1">Selection</h3>
+                <p className="text-sm text-gray-600">
+                  Sugar Level: <span className="font-semibold">{selectedSugar}%</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsSugarDialogOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (pendingProduct) {
+                    const pct = Math.max(0, Math.min(200, parseFloat(selectedSugar || "0")))
+                    addToCart(pendingProduct, `${pct}%`)
+                  }
+                  setIsSugarDialogOpen(false)
+                  setPendingProduct(null)
+                }}
+                className="flex-1"
+              >
+                <Coffee className="h-4 w-4 mr-2" />
+                Add to Cart
+              </Button>
             </div>
           </div>
-          <div className="px-2">
-            <Slider
-              value={[parseFloat(selectedSugar)]}
-              onValueChange={(value) => setSelectedSugar(value[0].toString())}
-              max={200}
-              min={0}
-              step={5}
-              className="w-full"
-            />
-            <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
-              <span>0%</span>
-              <span>100%</span>
-              <span>200%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Custom Input */}
-        <div className="space-y-2">
-          <Label htmlFor="custom-sugar" className="text-sm font-medium text-gray-700">
-            Custom Value
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              id="custom-sugar"
-              type="number"
-              value={selectedSugar}
-              onChange={(e) => {
-                const v = e.target.value.replace(/[^0-9.]/g, "")
-                setSelectedSugar(v)
-              }}
-              placeholder="0 - 200"
-              min={0}
-              max={200}
-              step="1"
-              className="text-center"
-            />
-            <div className="flex items-center px-3 bg-gray-100 text-gray-700 font-medium rounded">
-              <span>%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Preview */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="text-center">
-            <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center">
-              <Coffee className="h-4 w-4 text-gray-600" />
-            </div>
-            <h3 className="font-medium text-gray-800 mb-1">Selection</h3>
-            <p className="text-sm text-gray-600">
-              Sugar Level: <span className="font-semibold">{selectedSugar}%</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3 pt-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsSugarDialogOpen(false)}
-            className="flex-1"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              if (pendingProduct) {
-                const pct = Math.max(0, Math.min(200, parseFloat(selectedSugar || "0")))
-                addToCart(pendingProduct, `${pct}%`)
-              }
-              setIsSugarDialogOpen(false)
-              setPendingProduct(null)
-            }}
-            className="flex-1"
-          >
-            <Coffee className="h-4 w-4 mr-2" />
-            Add to Cart
-          </Button>
-        </div>
-      </div>
-    </DialogContent>
-  </Dialog>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
