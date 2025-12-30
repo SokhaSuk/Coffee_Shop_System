@@ -132,7 +132,7 @@ export function LoginForm() {
             )}
             <Button
               type="submit"
-              className="w-full bg-coffee-600 hover:bg-coffee-700 text-white"
+              className="w-full bg-coffee-600 hover:bg-coffee-700 text-primary"
               disabled={isFormDisabled}
             >
               {isFormDisabled ? "Signing in..." : "Sign In"}

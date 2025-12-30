@@ -12,14 +12,9 @@ export type PdfOptions = {
 export async function downloadElementAsPdf(
   element: HTMLElement,
   filename: string,
-  options: PdfOptions = {}
+  options: PdfOptions = {},
 ): Promise<void> {
-  const {
-    orientation = "p",
-    format = "a4",
-    marginMm = 8,
-    scale = 3
-  } = options
+  const { orientation = "p", format = "a4", marginMm = 8, scale = 3 } = options
 
   // Validate input parameters
   if (!element) {
@@ -36,7 +31,7 @@ export async function downloadElementAsPdf(
   }
 
   // Check if element has any content
-  const hasContent = element.textContent?.trim() || element.querySelector('*')
+  const hasContent = element.textContent?.trim() || element.querySelector("*")
   if (!hasContent) {
     throw new Error("Element appears to be empty - no content to generate PDF from")
   }
@@ -46,7 +41,7 @@ export async function downloadElementAsPdf(
     const clonedElement = element.cloneNode(true) as HTMLElement
 
     // Remove or replace problematic CSS that causes issues with PDF generation
-    const style = document.createElement('style')
+    const style = document.createElement("style")
     style.textContent = `
       * {
         color: black !important;
@@ -80,7 +75,7 @@ export async function downloadElementAsPdf(
       height: clonedElement.scrollHeight,
       foreignObjectRendering: false, // Disable foreign object rendering to avoid CSS issues
       imageTimeout: 15000, // Increase timeout for better image loading
-      removeContainer: true
+      removeContainer: true,
     })
 
     // Clean up the cloned element if it was added to DOM
@@ -98,7 +93,7 @@ export async function downloadElementAsPdf(
       orientation,
       unit: "mm",
       format,
-      compress: true
+      compress: true,
     })
 
     // Get PDF dimensions
@@ -106,8 +101,8 @@ export async function downloadElementAsPdf(
     const pdfHeight = pdf.internal.pageSize.getHeight()
 
     // Calculate content area (minus margins)
-    const contentWidth = pdfWidth - (marginMm * 2)
-    const contentHeight = pdfHeight - (marginMm * 2)
+    const contentWidth = pdfWidth - marginMm * 2
+    const contentHeight = pdfHeight - marginMm * 2
 
     // Calculate image dimensions
     const imgWidth = canvas.width
@@ -148,11 +143,17 @@ export async function downloadElementAsPdf(
     // Provide more specific error messages based on the error type
     if (error instanceof Error) {
       if (error.message.includes("canvas")) {
-        throw new Error("Failed to capture element content. Please ensure the element is fully loaded and visible.")
+        throw new Error(
+          "Failed to capture element content. Please ensure the element is fully loaded and visible.",
+        )
       } else if (error.message.includes("CORS")) {
-        throw new Error("Cross-origin resource blocked PDF generation. Please ensure all images are from the same domain.")
+        throw new Error(
+          "Cross-origin resource blocked PDF generation. Please ensure all images are from the same domain.",
+        )
       } else if (error.message.includes("memory") || error.message.includes("quota")) {
-        throw new Error("Insufficient memory to generate PDF. Try reducing the content size or scale.")
+        throw new Error(
+          "Insufficient memory to generate PDF. Try reducing the content size or scale.",
+        )
       } else {
         throw error
       }
@@ -163,17 +164,14 @@ export async function downloadElementAsPdf(
 }
 
 // Fallback function to create a simple text-based PDF receipt
-export async function createSimpleReceiptPdf(
-  order: Order,
-  filename: string
-): Promise<void> {
+export async function createSimpleReceiptPdf(order: Order, filename: string): Promise<void> {
   try {
     const pdf = new jsPDF({
       orientation: "p",
       unit: "mm",
       format: "a4",
       compress: true,
-      putOnlyUsedFonts: true
+      putOnlyUsedFonts: true,
     })
 
     const pageWidth = pdf.internal.pageSize.getWidth()
@@ -194,7 +192,7 @@ export async function createSimpleReceiptPdf(
     pdf.setFont("helvetica", "normal")
 
     // Check if this is a merchant or customer copy based on filename
-    const isMerchantCopy = filename.includes('merchant')
+    const isMerchantCopy = filename.includes("merchant")
     const receiptType = isMerchantCopy ? "MERCHANT COPY" : "CUSTOMER COPY"
     const receiptSubtitle = isMerchantCopy ? "For Internal Records" : "Please Keep Your Receipt"
 
@@ -268,7 +266,9 @@ export async function createSimpleReceiptPdf(
       yPosition += 5
       pdf.text("We appreciate your business", pageWidth / 2, yPosition, { align: "center" })
       yPosition += 5
-      pdf.text("Follow us: @DaCoffee | www.dacoffee.com", pageWidth / 2, yPosition, { align: "center" })
+      pdf.text("Follow us: @DaCoffee | www.dacoffee.com", pageWidth / 2, yPosition, {
+        align: "center",
+      })
       yPosition += 5
       pdf.text("🌟 Rate us on our website! 🌟", pageWidth / 2, yPosition, { align: "center" })
     }
