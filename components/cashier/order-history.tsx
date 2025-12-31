@@ -67,12 +67,17 @@ export function OrderHistory() {
     }
 
     try {
+      // Calculate actual payment details
+      const paidAmount = targetOrder.paidAmount || targetOrder.total
+      const changeAmount = targetOrder.changeAmount || 0
+      const paymentMethod = targetOrder.paymentMethod || 'cash'
+
       // Create simple receipt data
       const receiptData: ReceiptData = {
         title: "Receipt",
         orderId: targetOrder.id,
         customer: targetOrder.customer,
-        cashierName: "System",
+        cashierName: targetOrder.cashierName || "System",
         items: targetOrder.items.map((item, idx) => ({
           id: item.id || `item-${idx}`,
           name: item.name,
@@ -82,12 +87,15 @@ export function OrderHistory() {
         subtotal: targetOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
         total: targetOrder.total,
         createdAt: targetOrder.createdAt,
-        paymentMethod: targetOrder.paymentMethod as "cash" | "card" | "digital",
+        paymentMethod: paymentMethod as "cash" | "card" | "digital",
+        paidAmount: paymentMethod === 'cash' ? paidAmount : undefined,
+        changeAmount: paymentMethod === 'cash' ? changeAmount : undefined,
       }
 
       // Create a temporary print container with simple receipt component
       const printContainer = document.createElement('div')
       printContainer.id = 'receipt-print-container'
+      printContainer.className = 'print-content'
       printContainer.style.position = 'fixed'
       printContainer.style.left = '-9999px'
       printContainer.style.top = '0'
@@ -97,6 +105,30 @@ export function OrderHistory() {
       printContainer.style.color = 'black'
       printContainer.style.padding = '20px'
       printContainer.style.boxSizing = 'border-box'
+
+      // Build payment section based on payment method
+      let paymentSection = ''
+      if (paymentMethod === 'cash') {
+        paymentSection = `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+            <span style="font-size: 18px; font-weight: bold; color: #111827;">CASH</span>
+            <span style="font-size: 18px; font-weight: bold; color: #111827;">$${paidAmount.toFixed(2)}</span>
+          </div>
+          ${changeAmount > 0 ? `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+            <span style="font-size: 18px; font-weight: bold; color: #111827;">CHANGE</span>
+            <span style="font-size: 18px; font-weight: bold; color: #111827;">$${changeAmount.toFixed(2)}</span>
+          </div>
+          ` : ''}
+        `
+      } else {
+        paymentSection = `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+            <span style="font-size: 16px; font-weight: 500; color: #374151;">Payment Method</span>
+            <span style="font-size: 16px; font-weight: 500; color: #111827; text-transform: uppercase;">${paymentMethod}</span>
+          </div>
+        `
+      }
 
       // Generate simple receipt HTML
       const receiptHTML = `
@@ -123,10 +155,10 @@ export function OrderHistory() {
                 <span style="color: #374151; font-weight: 500;">${new Date(receiptData.createdAt).toLocaleString()}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="color: #374151;">Server: NY 58/8</span>
-                <span style="color: #374151;">AM</span>
+                <span style="color: #374151;">Cashier: ${receiptData.cashierName}</span>
+                <span style="color: #374151;">Customer: ${receiptData.customer}</span>
               </div>
-              <div style="color: #374151;">Survey code: 0000-2555-2588-4545-69</div>
+              <div style="color: #374151;">Order: ${receiptData.orderId}</div>
             </div>
             <div style="border-top: 2px; border-style: dotted; border-color: #d1d5db; padding-top: 12px;"></div>
           </div>
@@ -154,23 +186,15 @@ export function OrderHistory() {
             <div style="border-top: 2px; border-style: dotted; border-color: #d1d5db; padding-top: 12px; margin-top: 12px;"></div>
           </div>
 
-          <!-- Simple Totals Section -->
+          <!-- Totals Section -->
           <div style="padding: 0 16px 24px;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
-                <span style="font-size: 18px; font-weight: bold; color: #111827;">Price</span>
+                <span style="font-size: 18px; font-weight: bold; color: #111827;">Total</span>
                 <span style="font-size: 18px; font-weight: bold; color: #111827;">$${receiptData.total.toFixed(2)}</span>
               </div>
 
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
-                <span style="font-size: 18px; font-weight: bold; color: #111827;">CASH</span>
-                <span style="font-size: 18px; font-weight: bold; color: #111827;">$100.00</span>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
-                <span style="font-size: 18px; font-weight: bold; color: #111827;">CHANGE</span>
-                <span style="font-size: 18px; font-weight: bold; color: #111827;">$${(100 - receiptData.total).toFixed(2)}</span>
-              </div>
+              ${paymentSection}
 
               <div style="border-top: 2px; border-style: dotted; border-color: #d1d5db; padding-top: 12px; margin-top: 12px;"></div>
             </div>
@@ -185,8 +209,8 @@ export function OrderHistory() {
               <div style="background: #000000; color: white; padding: 12px; border-radius: 4px; display: inline-block;">
                 <div style="display: flex; justify-content: center; gap: 2px; margin-bottom: 4px;">
                   ${Array.from({ length: 32 }, (_, i) => (
-                    `<div style="width: 3px; height: 32px; background: ${Math.random() > 0.3 ? 'white' : 'black'};"></div>`
-                  )).join('')}
+        `<div style="width: 3px; height: 32px; background: ${Math.random() > 0.3 ? 'white' : 'black'};"></div>`
+      )).join('')}
                 </div>
                 <div style="font-size: 10px;">modif.ai</div>
               </div>
@@ -474,8 +498,8 @@ export function OrderHistory() {
                             </Button>
                           )}
                         </div>
+                      </div>
                     </div>
-                  </div>
                   </div>
                 </CardContent>
               </Card>
