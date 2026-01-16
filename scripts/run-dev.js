@@ -41,14 +41,18 @@ function getPort(argv) {
 }
 
 function run() {
+  // Define nextBin early to prevent ReferenceErrors
+  const nextBin = require.resolve('next/dist/bin/next')
   const argv = process.argv.slice(2)
   const lanIp = getLanIPv4()
-  const bindHost = process.env.DEV_HOST || lanIp
+  const bindHost = process.env.DEV_HOST || '0.0.0.0'
+  const port = getPort(argv)
 
   console.log('🚀 Starting Coffee Shop System...')
   console.log('')
-
-  const nextBin = require.resolve('next/dist/bin/next')
+  console.log(`  - Local:        http://localhost:${port}`)
+  console.log(`  - Network:      http://${lanIp}:${port}`)
+  console.log('')
 
   // Respect provided hostname flags, otherwise bind to 0.0.0.0
   const hasHostFlag = argv.some((a) => a === '-H' || a === '--hostname' || /^--hostname=/.test(String(a)))
@@ -63,5 +67,3 @@ function run() {
 }
 
 run()
-
-

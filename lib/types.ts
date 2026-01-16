@@ -12,6 +12,7 @@ export interface User extends BaseEntity {
   role: 'admin' | 'cashier' | 'manager'
   isActive: boolean
   lastLogin?: string
+  avatar?: string
 }
 
 export interface Product extends BaseEntity {

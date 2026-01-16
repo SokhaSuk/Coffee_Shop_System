@@ -44,25 +44,11 @@ export function ProtectedRoute({ children, allowedRoles, fallback }: ProtectedRo
   }
 
   if (!user) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-2">Please Login</h1>
-          <p className="text-muted-foreground">You need to be logged in to access this page.</p>
-        </div>
-      </div>
-    )
+    return fallback || null
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-2">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    )
+    return fallback || null
   }
 
   return <>{children}</>

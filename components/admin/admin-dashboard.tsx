@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { AdminSidebar } from "./admin-sidebar"
 import { DashboardOverview } from "./dashboard-overview"
+import { ModernDashboard } from "./modern-dashboard"
 import { ProductManagement } from "./product-management"
 import { OrderManagement } from "./order-management"
 import { UserManagement } from "./user-management"
@@ -28,6 +29,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useProducts } from "@/lib/product-context"
 import { useOrders } from "@/lib/order-context"
 import { useAuth } from "@/lib/auth-context"
+import { UserProfile } from "@/components/ui/user-profile"
 
 function AdminDashboardContent() {
   const [activeSection, setActiveSection] = useState("dashboard")
@@ -564,109 +566,7 @@ function AdminDashboardContent() {
         )
 
       case "analytics":
-        return (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-0">
-              <h2 className="text-xl sm:text-2xl font-bold">Analytics & Reports</h2>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleExportReport}
-                  disabled={isExporting}
-                  className="w-full sm:w-auto justify-center"
-                >
-                  {isExporting ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4 mr-2" />
-                  )}
-                  {isExporting ? "Exporting..." : "Export Report"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleRefreshAnalytics}
-                  className="w-full sm:w-auto justify-center"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-              </div>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <DashboardCard
-                title="Total Revenue"
-                value={`$${getRevenueByDateFilter("all").toFixed(2)}`}
-                icon={DollarSign}
-                trend={{ value: 12, label: "vs last month", isPositive: true }}
-              />
-              <DashboardCard
-                title="Total Orders"
-                value={getOrderStatsByDateFilter("all").total.toString()}
-                icon={ShoppingCart}
-                trend={{ value: 8, label: "vs last month", isPositive: true }}
-              />
-              <DashboardCard
-                title="Active Products"
-                value={products.filter(p => p.isAvailable).length.toString()}
-                icon={Package}
-                trend={{ value: 3, label: "available", isPositive: true }}
-              />
-            </div>
-
-            {/* Charts and Metrics */}
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Sales Overview
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 flex items-center justify-center text-muted-foreground bg-muted/30 rounded-lg">
-                    <div className="text-center">
-                      <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p>Interactive sales chart</p>
-                      <p className="text-sm">Chart implementation coming soon</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Performance Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="font-medium">Average Order Time</span>
-                      <span className="font-bold text-green-600">3.8 min</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="font-medium">Customer Satisfaction</span>
-                      <span className="font-bold text-green-600">96%</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="font-medium">Daily Revenue Goal</span>
-                      <span className="font-bold text-blue-600">${getRevenueByDateFilter("day").toFixed(0)} / $1000</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                      <span className="font-medium">Low Stock Alerts</span>
-                      <Badge variant={products.filter(p => p.stock <= 10).length > 0 ? "destructive" : "default"}>
-                        {products.filter(p => p.stock <= 10).length} items
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )
+        return <ModernDashboard />
 
       case "users":
         const handleAddUser = () => {
@@ -1061,6 +961,26 @@ function AdminDashboardContent() {
     <div className="flex min-h-screen bg-background">
       <AdminSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       <main className="flex-1 overflow-auto">
+        {/* Header */}
+        <header className="sticky top-0 z-10 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 flex h-16 items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-semibold capitalize">
+                {activeSection === "dashboard" && "Dashboard Overview"}
+                {activeSection === "orders" && "Order Management"}
+                {activeSection === "products" && "Product Management"}
+                {activeSection === "analytics" && "Analytics & Reports"}
+                {activeSection === "users" && "User Management"}
+                {activeSection === "settings" && "Settings"}
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <UserProfile />
+            </div>
+          </div>
+        </header>
+        
+        {/* Main Content */}
         <div className="container mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-6 md:ml-0 min-h-screen">
           {renderContent()}
         </div>

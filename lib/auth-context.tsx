@@ -14,6 +14,7 @@ export interface User {
   lastLogin?: string
   createdAt: string
   updatedAt: string
+  avatar?: string
 }
 
 interface AuthContextType {
