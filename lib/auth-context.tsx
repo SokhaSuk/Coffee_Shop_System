@@ -52,6 +52,26 @@ const initialUsers: User[] = [
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-15T09:15:00Z",
   },
+  {
+    id: "3",
+    email: "sokha.suk2004@gmail.com",
+    name: "Sokha Suk",
+    role: "admin",
+    isActive: true,
+    lastLogin: "2024-01-15T08:00:00Z",
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-15T08:00:00Z",
+  },
+  {
+    id: "4",
+    email: "chouer.khy123@gmail.com",
+    name: "Chouer Khy",
+    role: "admin",
+    isActive: true,
+    lastLogin: "2024-01-15T08:00:00Z",
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-15T08:00:00Z",
+  }
 ]
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
